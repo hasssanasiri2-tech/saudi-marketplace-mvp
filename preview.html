@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سريع | معاينة MVP</title>
+    <link rel="stylesheet" href="./preview.css" />
+  </head>
+  <body>
+    <main class="phone-shell">
+      <section id="login" class="screen login-screen">
+        <div class="brand-icon">س</div>
+        <p class="brand">سريع</p>
+        <h1>أسهل طريقة لبيع وشراء الأشياء بسرعة وبثقة</h1>
+        <p id="welcomeText" class="muted">مرحبًا بك، يسعدنا وجودك في سريع.</p>
+        <form id="loginForm" class="form">
+          <label>اسم المستخدم<input id="nameInput" autocomplete="username" /></label>
+          <label>كلمة المرور
+            <span class="password-wrap">
+              <input id="loginPassword" type="password" autocomplete="current-password" />
+              <button type="button" class="password-toggle" data-target="loginPassword" aria-label="إظهار كلمة المرور">👁</button>
+            </span>
+          </label>
+          <p id="loginError" class="form-error hidden">اسم المستخدم أو كلمة المرور غير صحيحة.</p>
+          <p id="loginSuccess" class="form-success hidden">تم إنشاء الحساب بنجاح، سجّل الدخول الآن.</p>
+          <div class="login-links">
+            <button type="button" id="createAccount">إنشاء حساب</button>
+            <button type="button" id="forgotPassword">نسيت كلمة المرور؟</button>
+          </div>
+          <div id="savedAccountsPanel" class="saved-accounts hidden">
+            <strong>الحسابات المحفوظة</strong>
+            <div id="savedAccountsList"></div>
+          </div>
+          <button class="primary">دخول وتجربة التطبيق</button>
+        </form>
+      </section>
+
+      <section id="signup" class="screen login-screen hidden">
+        <div class="brand-icon">+</div>
+        <p class="brand">حساب جديد</p>
+        <h1>أنشئ حسابك وابدأ البيع والشراء بثقة</h1>
+        <p class="muted">املأ بياناتك الأساسية، ويمكنك تعديلها لاحقًا من صفحة حسابي.</p>
+        <form id="signupForm" class="form">
+          <label>الاسم الكامل<input id="signupName" required /></label>
+          <label>اسم المستخدم<input id="signupUsername" required autocomplete="username" /></label>
+          <label>رقم الجوال<input id="signupPhone" required inputmode="tel" /></label>
+          <label>المدينة<select id="signupCity"></select></label>
+          <label>كلمة المرور
+            <span class="password-wrap">
+              <input id="signupPassword" required type="password" autocomplete="new-password" />
+              <button type="button" class="password-toggle" data-target="signupPassword" aria-label="إظهار كلمة المرور">👁</button>
+            </span>
+          </label>
+          <p id="signupError" class="form-error hidden">هذا الحساب مسجل مسبقًا.</p>
+          <button class="primary">إنشاء الحساب</button>
+          <button type="button" id="backToLogin" class="ghost-button">لدي حساب بالفعل</button>
+        </form>
+      </section>
+
+      <section id="app" class="app hidden">
+        <header class="topbar">
+          <button class="icon">☰</button>
+          <div><p>سريع</p><h2 id="pageTitle">الإعلانات القريبة</h2></div>
+          <label class="top-search" aria-label="بحث">
+            <span>⌕</span>
+            <input id="topSearchInput" placeholder="بحث" />
+          </label>
+        </header>
+
+        <section id="homePage" class="page active">
+          <div class="home-intro">
+            <div>
+              <p>تصفح بالقرب منك</p>
+              <h1>الرياض</h1>
+            </div>
+            <button data-page="addPage" class="quick-add">＋</button>
+          </div>
+          <input id="searchInput" type="hidden" />
+          <div class="filters">
+            <strong>تصفية سريعة</strong>
+            <div class="filter-grid">
+              <select id="filterCity"></select>
+              <select id="filterCategory"><option value="الكل">كل الفئات</option><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option><option value="furniture">أثاث</option><option value="games">ألعاب</option><option value="realestate">عقارات</option><option value="misc">متفرقات</option></select>
+              <select id="filterPrice"><option value="الكل">كل الأسعار</option><option value="1000">حتى 1000</option><option value="5000">حتى 5000</option><option value="50000">حتى 50000</option></select>
+            </div>
+          </div>
+          <div class="section-title"><h3>الفئات</h3><button id="moreCategories" class="more-link">المزيد</button></div>
+          <div id="categories" class="chips"></div>
+          <div id="categorySheet" class="category-sheet hidden">
+            <div class="sheet-head">
+              <strong>كل الفئات</strong>
+              <button id="closeCategories" type="button">×</button>
+            </div>
+            <div id="allCategories" class="all-categories"></div>
+          </div>
+          <div class="section-title"><h3>إعلانات مقترحة</h3><span id="count"></span></div>
+          <div id="listings" class="listings"></div>
+        </section>
+
+        <section id="addPage" class="page">
+          <form id="addForm" class="form add-form">
+            <label class="upload">＋<span>ارفع صورة المنتج</span><small>صورة واضحة تزيد الثقة</small></label>
+            <label>عنوان المنتج<input id="newTitle" required placeholder="مثال: آيفون 15 برو" /></label>
+            <label>السعر<input id="newPrice" required inputmode="numeric" placeholder="السعر بالريال" /></label>
+            <div class="two">
+              <label>الفئة<select id="newCategory"><option value="electronics">إلكترونيات</option><option value="cars">سيارات</option><option value="furniture">أثاث</option><option value="games">ألعاب</option><option value="realestate">عقارات</option><option value="misc">متفرقات</option></select></label>
+              <label>المدينة<select id="newCity"></select></label>
+            </div>
+            <label>وصف مختصر<textarea id="newDesc" required placeholder="اذكر الحالة، مدة الاستخدام، وما يشجع المشتري."></textarea></label>
+            <button class="primary">نشر الإعلان</button>
+          </form>
+        </section>
+
+        <section id="detailsPage" class="page"></section>
+
+        <section id="chatPage" class="page">
+          <div class="conversation-tabs"><button class="active">كامري 2021</button><button>آيفون 15 برو</button></div>
+          <div class="chat-card">
+            <div class="chat-head"><strong>كامري 2021 فل كامل</strong><span>اضغط لعرض الإعلان</span></div>
+            <div class="messages">
+              <p class="bubble mine">السلام عليكم، هل السيارة متاحة؟<small>09:15</small></p>
+              <p class="bubble">وعليكم السلام، نعم متاحة.<small>09:17</small></p>
+              <p class="bubble mine">ممكن أشوفها اليوم؟<small>الآن</small></p>
+            </div>
+            <form id="chatForm" class="chat-input"><input id="chatInput" placeholder="اكتب رسالتك..." /><button>➤</button></form>
+          </div>
+        </section>
+
+        <section id="profilePage" class="page">
+          <div class="profile-hero">
+            <div class="avatar">ن</div>
+            <div><h2 id="profileName">نورة العتيبي ✓</h2><p id="profileMeta">0501234567 · الرياض</p></div>
+            <div class="metrics"><span><b>2</b>إعلاناتي</span><span><b id="savedCount">0</b>محفوظة</span><span><b>4.8</b>التقييم</span></div>
+          </div>
+          <div class="panel"><strong>توثيق المستخدم</strong><p>الحساب موثق برقم الجوال والمدينة.</p></div>
+          <div class="panel"><strong>التقييمات</strong><p class="stars">★★★★★</p><p>بائع سريع في الرد، ووصف المنتجات واضح ودقيق.</p></div>
+          <button id="logout" class="danger">تسجيل خروج</button>
+        </section>
+
+        <section id="savedPage" class="page">
+          <div class="section-title"><h3>الإعلانات المحفوظة</h3><span id="savedPageCount">0 إعلان</span></div>
+          <div id="savedPageList" class="listings"></div>
+        </section>
+
+        <nav class="bottom-nav">
+          <button data-page="profilePage">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>
+            </span>
+            <span>حسابي</span>
+          </button>
+          <button data-page="chatPage">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.6-5A8 8 0 1 1 21 12Z"/></svg>
+            </span>
+            <span>المحادثات</span>
+          </button>
+          <button data-page="homePage" class="active home-center">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+            </span>
+            <span>الرئيسية</span>
+          </button>
+          <button data-page="addPage">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            </span>
+            <span>إضافة</span>
+          </button>
+          <button data-page="savedPage">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21 12 17 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>
+            </span>
+            <span>محفوظة</span>
+          </button>
+        </nav>
+      </section>
+    </main>
+    <script src="./preview.js"></script>
+  </body>
+</html>
