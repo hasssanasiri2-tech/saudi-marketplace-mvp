@@ -1,73 +1,245 @@
-import { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { supabase } from './lib/supabase'
 import {
-  BadgeCheck,
-  BedDouble,
   Bell,
   Bookmark,
   BookmarkCheck,
+  Camera,
   Car,
   ChevronLeft,
   CircleUserRound,
-  Gamepad2,
-  Heart,
-  Home,
-  ImagePlus,
-  LogOut,
-  Menu,
-  MessageCircle,
+  Compass,
   Eye,
   EyeOff,
+  Heart,
+  Home,
+  Laptop,
+  LogOut,
+  MapPin,
+  MessageCircle,
   Package,
   Plus,
   Search,
   Send,
-  SlidersHorizontal,
-  Smartphone,
+  Settings,
+  ShieldCheck,
+  Shirt,
   Sofa,
   Star,
-  UserRoundCheck,
+  Tag,
+  Wallet,
   X
 } from 'lucide-react'
-import { categories, cities, listings as seedListings, messages, savedListings, users } from './data/mockData'
-import { formatPrice, getRelativeDate } from './utils/format'
 
-const categoryIcons = {
-  cars: Car,
-  electronics: Smartphone,
-  furniture: Sofa,
-  games: Gamepad2,
-  realestate: BedDouble,
-  misc: Package
+const brandColor = '#0f766e'
+
+const defaultUser = {
+  id: 'guest',
+  name: 'مستخدم سريع',
+  phone: '0500000000',
+  city: 'الرياض',
+  rating: 4.8,
+  verified: true
 }
 
-const currentUserSeed = users[0]
+const cities = ['الرياض', 'جدة', 'مكة المكرمة', 'المدينة المنورة', 'الدمام', 'الخبر', 'أبها', 'تبوك']
+
+const categoryOptions = [
+  { id: 'all', name: 'الكل', icon: Package },
+  { id: 'cars', name: 'سيارات', icon: Car },
+  { id: 'electronics', name: 'إلكترونيات', icon: Laptop },
+  { id: 'furniture', name: 'أثاث', icon: Sofa },
+  { id: 'fashion', name: 'ملابس', icon: Shirt }
+]
+
+const decorativeShapes = [
+  { id: 1, name: 'زخرفة هندسية' },
+  { id: 2, name: 'نقش إسلامي' },
+  { id: 3, name: 'زهرة عربية' },
+  { id: 4, name: 'أوراق متداخلة' },
+  { id: 5, name: 'كثبان وهلال' },
+  { id: 6, name: 'موج البحر' },
+  { id: 7, name: 'قوس معماري' },
+  { id: 8, name: 'خط عربي فني' },
+  { id: 9, name: 'تكرار هندسي' },
+  { id: 10, name: 'دوامات ناعمة' },
+  { id: 11, name: 'جبال متدرجة' },
+  { id: 12, name: 'أشكال طبيعية' },
+  { id: 13, name: 'طيات متداخلة' },
+  { id: 14, name: 'فسيفساء عربية' },
+  { id: 15, name: 'خطوط رملية' }
+]
+
+const seedListings = [
+  {
+    id: 101,
+    userId: 'guest',
+    title: 'آيفون 15 برو 256GB',
+    description: 'جهاز نظيف جدًا، استخدام خفيف، مع الكرتون والشاحن الأصلي.',
+    price: 3490,
+    category: 'electronics',
+    city: 'الرياض',
+    imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=900&q=80',
+    status: 'ممتاز',
+    createdAt: '2026-05-18'
+  },
+  {
+    id: 102,
+    userId: 'guest',
+    title: 'كامري 2021 فل كامل',
+    description: 'ممشى قليل، صيانة وكالة، السيارة جاهزة للاستخدام.',
+    price: 83500,
+    category: 'cars',
+    city: 'جدة',
+    imageUrl: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=900&q=80',
+    status: 'نظيف',
+    createdAt: '2026-05-17'
+  },
+  {
+    id: 103,
+    userId: 'guest',
+    title: 'كنب زاوية مودرن',
+    description: 'كنب مريح بلون رمادي فاتح، مناسب للصالة وحالته ممتازة.',
+    price: 1450,
+    category: 'furniture',
+    city: 'الدمام',
+    imageUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=80',
+    status: 'شبه جديد',
+    createdAt: '2026-05-16'
+  },
+  {
+    id: 104,
+    userId: 'guest',
+    title: 'جاكيت شتوي فاخر',
+    description: 'جاكيت عملي بحالة ممتازة ومناسب للسفر والشتاء.',
+    price: 220,
+    category: 'fashion',
+    city: 'الخبر',
+    imageUrl: 'https://images.unsplash.com/photo-1543076447-215ad9ba6923?auto=format&fit=crop&w=900&q=80',
+    status: 'ممتاز',
+    createdAt: '2026-05-15'
+  }
+]
+
+function normalizeListing(listing) {
+  return {
+    ...listing,
+    userId: listing.userId || listing.user_id || defaultUser.id,
+    createdAt: listing.createdAt || listing.created_at || new Date().toISOString(),
+    imageUrl: listing.imageUrl || listing.image_url
+  }
+}
+
+function formatPrice(value) {
+  return new Intl.NumberFormat('ar-SA', {
+    style: 'currency',
+    currency: 'SAR',
+    maximumFractionDigits: 0
+  }).format(Number(value || 0))
+}
+
+function categoryName(id) {
+  return categoryOptions.find((category) => category.id === id)?.name || 'متنوع'
+}
+
+function shapeImageSrc(id) {
+  return `/home-shapes/shape-${String(id).padStart(2, '0')}.png`
+}
+
+const profileGifSrc = '/profile/arab-man.gif'
+const profileStillSrc = '/profile/arab-man-clean.png'
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState(currentUserSeed)
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [user, setUser] = useState(defaultUser)
   const [activePage, setActivePage] = useState('home')
   const [selectedListingId, setSelectedListingId] = useState(seedListings[0].id)
-  const [allListings, setAllListings] = useState(seedListings)
-  const [savedIds, setSavedIds] = useState(savedListings.filter((item) => item.userId === user.id).map((item) => item.listingId))
-  const [filters, setFilters] = useState({ query: '', city: 'الكل', category: 'الكل', maxPrice: 'الكل' })
+  const [listings, setListings] = useState(seedListings)
+  const [savedIds, setSavedIds] = useState([])
+  const [filters, setFilters] = useState({ query: '', category: 'all' })
+  const [homeShapeId, setHomeShapeId] = useState(() => Number(window.localStorage.getItem('homeShapeId')) || 2)
 
-  const selectedListing = allListings.find((listing) => listing.id === selectedListingId) || allListings[0]
-  const seller = users.find((item) => item.id === selectedListing.userId) || user
+  useEffect(() => {
+    fetchListings()
+  }, [])
+
+  useEffect(() => {
+    window.localStorage.setItem('homeShapeId', String(homeShapeId))
+  }, [homeShapeId])
+
+  useEffect(() => {
+    let mounted = true
+
+    async function loadSession() {
+      const { data } = await supabase.auth.getSession()
+      if (!mounted) return
+      setSession(data.session)
+      await loadProfile(data.session)
+      if (mounted) setAuthLoading(false)
+    }
+
+    loadSession()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+      loadProfile(nextSession)
+      if (!nextSession) setActivePage('home')
+    })
+
+    return () => {
+      mounted = false
+      listener?.subscription?.unsubscribe()
+    }
+  }, [])
+
+  async function loadProfile(activeSession) {
+    if (!activeSession?.user) {
+      setUser(defaultUser)
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name, phone, city')
+      .eq('id', activeSession.user.id)
+      .maybeSingle()
+
+    if (error) console.log(error)
+
+    setUser({
+      ...defaultUser,
+      id: activeSession.user.id,
+      email: activeSession.user.email,
+      name: data?.name || activeSession.user.user_metadata?.name || defaultUser.name,
+      phone: data?.phone || activeSession.user.user_metadata?.phone || defaultUser.phone,
+      city: data?.city || activeSession.user.user_metadata?.city || defaultUser.city
+    })
+  }
+
+  async function fetchListings() {
+    const { data, error } = await supabase.from('listings').select('*')
+    if (error) {
+      console.log(error)
+      return
+    }
+    if (data?.length) setListings(data.map(normalizeListing))
+  }
 
   const filteredListings = useMemo(() => {
-    return allListings.filter((listing) => {
-      const matchesQuery = listing.title.includes(filters.query) || listing.description.includes(filters.query)
-      const matchesCity = filters.city === 'الكل' || listing.city === filters.city
-      const matchesCategory = filters.category === 'الكل' || listing.category === filters.category
-      const matchesPrice =
-        filters.maxPrice === 'الكل' ||
-        (filters.maxPrice === '1000' && listing.price <= 1000) ||
-        (filters.maxPrice === '5000' && listing.price <= 5000) ||
-        (filters.maxPrice === '50000' && listing.price <= 50000)
-
-      return matchesQuery && matchesCity && matchesCategory && matchesPrice
+    return listings.filter((listing) => {
+      const query = filters.query.trim()
+      const matchesQuery =
+        !query ||
+        listing.title?.includes(query) ||
+        listing.description?.includes(query) ||
+        listing.city?.includes(query)
+      const matchesCategory = filters.category === 'all' || listing.category === filters.category
+      return matchesQuery && matchesCategory
     })
-  }, [allListings, filters])
+  }, [filters, listings])
+
+  const selectedListing = listings.find((listing) => listing.id === selectedListingId) || listings[0]
 
   function openListing(id) {
     setSelectedListingId(id)
@@ -76,295 +248,433 @@ export default function App() {
   }
 
   function toggleSaved(id) {
-    setSavedIds((ids) => (ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]))
+    setSavedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]))
   }
 
-  function publishListing(payload) {
-    const newListing = {
-      ...payload,
-      id: Date.now(),
-      userId: user.id,
-      status: 'جديد',
-      createdAt: new Date().toISOString().slice(0, 10)
+  async function publishListing(payload) {
+    const row = {
+      title: payload.title,
+      price: Number(payload.price),
+      category: payload.category,
+      city: payload.city,
+      description: payload.description,
+      image_url: payload.image_url,
+      user_id: user.id
     }
-    setAllListings((items) => [newListing, ...items])
+
+    const { data, error } = await supabase.from('listings').insert(row).select().single()
+    if (error) throw error
+
+    const newListing = normalizeListing(data || { ...row, id: Date.now() })
+    setListings((items) => [newListing, ...items])
     setSelectedListingId(newListing.id)
     setActivePage('details')
   }
 
-  if (!isLoggedIn) {
-    return <LoginPage user={user} setUser={setUser} onLogin={() => setIsLoggedIn(true)} />
+  async function logout() {
+    await supabase.auth.signOut()
+    setSession(null)
+    setUser(defaultUser)
+    setActivePage('home')
   }
 
-  return (
-    <div className="min-h-screen" dir="rtl">
-      <div className="mx-auto min-h-screen w-full max-w-md bg-[#f7faf9] shadow-soft md:my-6 md:min-h-[880px] md:overflow-hidden md:rounded-[32px]">
-        <AppHeader user={user} activePage={activePage} setActivePage={setActivePage} />
+  async function handleAuthReady(nextSession) {
+    setSession(nextSession)
+    await loadProfile(nextSession)
+  }
 
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 px-5" dir="rtl">
+        <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-soft">
+          <p className="text-sm font-extrabold text-teal-300">جاري تحميل الحساب...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session) return <AuthPage onAuthReady={handleAuthReady} />
+
+  return (
+    <div className="min-h-screen bg-slate-950" dir="rtl">
+      <div className="mx-auto min-h-screen w-full max-w-md bg-slate-900 text-slate-100 shadow-soft md:my-5 md:min-h-[880px] md:overflow-hidden md:rounded-[28px]">
         <main className="safe-bottom px-4 pb-6">
           {activePage === 'home' && (
             <HomePage
               filters={filters}
-              setFilters={setFilters}
               listings={filteredListings}
+              savedIds={savedIds}
+              setActivePage={setActivePage}
+              setFilters={setFilters}
+              onOpenListing={openListing}
+              onToggleSaved={toggleSaved}
+              user={user}
+            />
+          )}
+          {activePage === 'add' && <AddListingPage onPublish={publishListing} userCity={user.city} />}
+          {activePage === 'explore' && (
+            <ExplorePage
+              listings={listings}
               savedIds={savedIds}
               onOpenListing={openListing}
               onToggleSaved={toggleSaved}
             />
           )}
-          {activePage === 'add' && <AddListingPage onPublish={publishListing} userCity={user.city} />}
-          {activePage === 'details' && (
+          {activePage === 'details' && selectedListing && (
             <DetailsPage
               listing={selectedListing}
-              seller={seller}
               isSaved={savedIds.includes(selectedListing.id)}
               onBack={() => setActivePage('home')}
-              onChat={() => setActivePage('chat')}
               onToggleSaved={() => toggleSaved(selectedListing.id)}
             />
           )}
-          {activePage === 'chat' && <ChatPage user={user} onOpenListing={openListing} />}
-          {activePage === 'profile' && (
-            <ProfilePage
-              user={user}
-              listings={allListings}
-              savedIds={savedIds}
-              onLogout={() => setIsLoggedIn(false)}
+          {activePage === 'chat' && <MessagesPage />}
+          {activePage === 'saved' && (
+            <SavedPage
+              listings={listings.filter((listing) => savedIds.includes(listing.id))}
               onOpenListing={openListing}
             />
           )}
+          {activePage === 'profile' && (
+            <ProfilePage
+              user={user}
+              listings={listings}
+              savedIds={savedIds}
+              homeShapeId={homeShapeId}
+              onLogout={logout}
+              onOpenListing={openListing}
+              onSelectHomeShape={setHomeShapeId}
+              onOpenStudio={() => setActivePage('add')}
+            />
+          )}
         </main>
-
-        <BottomNav activePage={activePage} setActivePage={setActivePage} />
+        <BottomNav activePage={activePage} setActivePage={setActivePage} homeShapeId={homeShapeId} />
       </div>
     </div>
   )
 }
 
-function LoginPage({ user, setUser, onLogin }) {
+function AuthPage({ onAuthReady }) {
+  const [mode, setMode] = useState('login')
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    city: defaultUser.city,
+    email: '',
+    password: ''
+  })
   const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isResendingConfirmation, setIsResendingConfirmation] = useState(false)
+  const [message, setMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const isLogin = mode === 'login'
+  const isSignup = mode === 'signup'
+  const isForgot = mode === 'forgot'
+  const title = isSignup ? 'إنشاء حساب' : isForgot ? 'استعادة كلمة المرور' : 'تسجيل الدخول'
+  const subtitle = isSignup
+    ? 'أكمل بياناتك للبدء في البيع والشراء.'
+    : isForgot
+      ? 'أدخل بريدك الإلكتروني وسنرسل رابط إعادة التعيين.'
+      : 'مرحبًا بك في سريع.'
+
+  function updateForm(key, value) {
+    setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  function switchMode(nextMode) {
+    setMode(nextMode)
+    setMessage('')
+    setErrorMessage('')
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setMessage('')
+    setErrorMessage('')
+    setIsSubmitting(true)
+    const email = form.email.trim()
+
+    try {
+      if (isForgot) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin
+        })
+        if (error) throw error
+        setMessage('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.')
+        return
+      }
+
+      if (isSignup) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password: form.password,
+          options: {
+            data: {
+              name: form.name,
+              phone: form.phone,
+              city: form.city
+            }
+          }
+        })
+        if (error) throw error
+
+        if (data.user) {
+          const { error: profileError } = await supabase.from('profiles').insert({
+            id: data.user.id,
+            name: form.name,
+            phone: form.phone,
+            city: form.city
+          })
+          if (profileError) throw profileError
+        }
+
+        if (data.session) await onAuthReady(data.session)
+        else setMessage('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتفعيل الحساب.')
+        return
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password: form.password
+      })
+
+      if (error) {
+        if (error.message?.toLowerCase().includes('email not confirmed')) {
+          throw new Error('يرجى تأكيد بريدك الإلكتروني أولاً.')
+        }
+        throw error
+      }
+
+      await onAuthReady(data.session)
+    } catch (error) {
+      setErrorMessage(error.message || 'تعذر إتمام العملية. حاول مرة أخرى.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function handleResendConfirmation() {
+    setMessage('')
+    setErrorMessage('')
+    const email = form.email.trim()
+
+    if (!email) {
+      setErrorMessage('اكتب بريدك الإلكتروني أولاً لإعادة إرسال رابط التفعيل.')
+      return
+    }
+
+    setIsResendingConfirmation(true)
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email })
+      if (error) throw error
+      setMessage('تم إرسال رابط التفعيل مرة أخرى. تحقق من بريدك الإلكتروني.')
+    } catch (error) {
+      setErrorMessage(error.message || 'تعذر إعادة إرسال رابط التفعيل.')
+    } finally {
+      setIsResendingConfirmation(false)
+    }
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#eef8f5] px-5" dir="rtl">
-      <section className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-soft">
-        <div className="mb-7">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-700 text-white">
-            <Package size={28} />
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-5 py-8" dir="rtl">
+      <section className="w-full max-w-md overflow-hidden rounded-[30px] border border-white/10 bg-slate-900 shadow-[0_26px_80px_rgba(2,6,23,0.6)]">
+        <div className="bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.28),transparent_40%),linear-gradient(180deg,rgba(15,118,110,0.18),rgba(15,23,42,0))] p-6">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-extrabold text-teal-300">سريع</p>
+              <h1 className="mt-2 text-3xl font-extrabold leading-tight text-white">{title}</h1>
+            </div>
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-teal-600 text-white">
+              <Package size={28} />
+            </div>
           </div>
-          <p className="text-sm font-bold text-teal-700">سريع</p>
-          <h1 className="mt-2 text-3xl font-extrabold leading-tight text-slate-950">أسهل طريقة لبيع وشراء الأشياء بسرعة وبثقة</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-500">مرحبًا {user.name || 'ضيفنا'}، يسعدنا وجودك في سريع.</p>
+          <p className="text-sm leading-7 text-slate-300">{subtitle}</p>
         </div>
 
-        <form
-          className="space-y-4"
-          onSubmit={(event) => {
-            event.preventDefault()
-            onLogin()
-          }}
-        >
-          <Field label="اسم المستخدم">
-            <input
-              required
-              className="input"
-              value={user.name}
-              autoComplete="username"
-              onChange={(event) => setUser({ ...user, name: event.target.value })}
-              placeholder="اسم المستخدم"
-            />
-          </Field>
-          <Field label="كلمة المرور">
-            <div className="relative">
-              <input
-                required
-                type={showPassword ? 'text' : 'password'}
-                className="input pl-14"
-                autoComplete="current-password"
-                defaultValue="123456"
-                placeholder="كلمة المرور"
-              />
-              <button
-                className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600"
-                type="button"
-                aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                onClick={() => setShowPassword((value) => !value)}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </Field>
+        <form className="space-y-4 p-6 pt-2" onSubmit={handleSubmit}>
+          {isSignup && (
+            <>
+              <AuthField label="الاسم">
+                <input required className="auth-input" value={form.name} autoComplete="name" onChange={(event) => updateForm('name', event.target.value)} placeholder="اسمك" />
+              </AuthField>
+              <AuthField label="رقم الجوال">
+                <input required className="auth-input" value={form.phone} inputMode="tel" autoComplete="tel" onChange={(event) => updateForm('phone', event.target.value)} placeholder="05xxxxxxxx" />
+              </AuthField>
+              <AuthField label="المدينة">
+                <select className="auth-input" value={form.city} onChange={(event) => updateForm('city', event.target.value)}>
+                  {cities.map((city) => (
+                    <option key={city}>{city}</option>
+                  ))}
+                </select>
+              </AuthField>
+            </>
+          )}
 
-          <div className="flex items-center justify-between gap-3 text-sm font-extrabold">
-            <button className="text-teal-700" type="button" onClick={() => alert('سيتم إضافة شاشة إنشاء الحساب في النسخة التالية من الـ MVP.')}>
-              إنشاء حساب
-            </button>
-            <button className="text-teal-700" type="button" onClick={() => alert('سيتم إرسال رابط استعادة كلمة المرور في النسخة التالية من الـ MVP.')}>
+          <AuthField label="البريد الإلكتروني">
+            <input required type="email" className="auth-input" value={form.email} autoComplete="email" onChange={(event) => updateForm('email', event.target.value)} placeholder="name@example.com" />
+          </AuthField>
+
+          {!isForgot && (
+            <AuthField label="كلمة المرور">
+              <div className="relative">
+                <input
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  className="auth-input pl-14"
+                  autoComplete={isSignup ? 'new-password' : 'current-password'}
+                  minLength={6}
+                  value={form.password}
+                  onChange={(event) => updateForm('password', event.target.value)}
+                  placeholder="كلمة المرور"
+                />
+                <button
+                  className="absolute left-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300"
+                  type="button"
+                  aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                  onClick={() => setShowPassword((value) => !value)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </AuthField>
+          )}
+
+          {isLogin && (
+            <button className="text-sm font-extrabold text-teal-300" type="button" onClick={() => switchMode('forgot')}>
               نسيت كلمة المرور؟
             </button>
-          </div>
+          )}
 
-          <button className="btn-primary w-full" type="submit">
-            دخول وتجربة التطبيق
+          {message && <p className="rounded-2xl border border-teal-400/20 bg-teal-400/10 p-3 text-sm font-bold text-teal-100">{message}</p>}
+          {errorMessage && <p className="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm font-bold text-rose-100">{errorMessage}</p>}
+
+          <button className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-teal-600 px-5 py-3 text-sm font-extrabold text-white transition active:scale-[0.98] disabled:opacity-70" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'جاري الإرسال...' : isSignup ? 'إنشاء حساب' : isForgot ? 'إرسال رابط الاستعادة' : 'تسجيل الدخول'}
           </button>
+
+          <div className="grid gap-2">
+            {!isSignup && (
+              <button className="btn-secondary border-white/10 bg-white/5 text-slate-100" type="button" onClick={() => switchMode('signup')}>
+                إنشاء حساب جديد
+              </button>
+            )}
+            {(isLogin || isSignup) && (
+              <button className="btn-secondary border-white/10 bg-white/5 text-slate-100 disabled:opacity-70" type="button" disabled={isResendingConfirmation} onClick={handleResendConfirmation}>
+                {isResendingConfirmation ? 'جاري إعادة الإرسال...' : 'إعادة إرسال رابط التفعيل'}
+              </button>
+            )}
+            {!isLogin && (
+              <button className="btn-secondary border-white/10 bg-white/5 text-slate-100" type="button" onClick={() => switchMode('login')}>
+                العودة إلى تسجيل الدخول
+              </button>
+            )}
+          </div>
         </form>
       </section>
     </div>
   )
 }
 
-function AppHeader({ user, activePage, setActivePage }) {
-  const titles = {
-    home: 'الإعلانات القريبة',
-    add: 'إضافة إعلان',
-    details: 'تفاصيل الإعلان',
-    chat: 'المحادثات',
-    profile: 'حسابي'
-  }
-
+function AuthField({ label, children }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-[#f7faf9]/95 px-4 py-4 backdrop-blur">
-      <div className="flex items-center justify-between">
-        <button className="icon-button" aria-label="القائمة">
-          <Menu size={21} />
-        </button>
-        <div className="text-center">
-          <p className="text-xs font-bold text-teal-700">سريع</p>
-          <h2 className="text-lg font-extrabold text-slate-950">{titles[activePage]}</h2>
-        </div>
-        <button className="icon-button relative" aria-label="التنبيهات" onClick={() => setActivePage('profile')}>
-          <Bell size={20} />
-          {user.verified && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-teal-600" />}
-        </button>
-      </div>
-    </header>
+    <label className="block">
+      <span className="mb-2 block text-sm font-extrabold text-slate-200">{label}</span>
+      {children}
+    </label>
   )
 }
 
-function HomePage({ filters, setFilters, listings, savedIds, onOpenListing, onToggleSaved }) {
+function HomePage({ filters, setFilters, listings, savedIds, onOpenListing, onToggleSaved, setActivePage, user }) {
+  const quickCategories = categoryOptions.slice(1, 5)
+
   return (
-    <div className="space-y-5 pt-4">
-      <section>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-extrabold text-teal-700">تصفح بالقرب منك</p>
-            <h1 className="mt-1 text-[22px] font-extrabold leading-tight text-slate-950">الرياض</h1>
-          </div>
-          <button className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-700 text-white shadow-sm" aria-label="إضافة إعلان">
-            <Plus size={24} />
-          </button>
+    <div className="space-y-5 pt-5">
+      <header className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-extrabold text-teal-300">أهلًا {user.name}</p>
+          <h1 className="mt-1 text-2xl font-extrabold text-white">ماذا تبحث عنه؟</h1>
         </div>
-        <div className="mt-4 flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-1">
-          <Search size={21} className="text-teal-700" />
-          <input
-            className="w-full bg-transparent py-3 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400"
-            placeholder="ابحث في سريع"
-            value={filters.query}
-            onChange={(event) => setFilters({ ...filters, query: event.target.value })}
-          />
-        </div>
+        <button className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-slate-800 text-slate-100 shadow-sm" type="button" onClick={() => setActivePage('profile')} aria-label="الحساب">
+          <CircleUserRound size={24} />
+        </button>
+      </header>
+
+      <section className="flex items-center gap-3 rounded-3xl border border-white/10 bg-slate-800 px-4 py-2 shadow-sm">
+        <Search size={21} className="text-teal-300" />
+        <input
+          className="w-full bg-transparent py-3 text-sm font-bold text-slate-100 outline-none placeholder:text-slate-500"
+          placeholder="ابحث عن سيارة، جوال، أثاث..."
+          value={filters.query}
+          onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
+        />
       </section>
 
-      <FilterBar filters={filters} setFilters={setFilters} />
+      <section className="grid grid-cols-4 gap-2">
+        {quickCategories.map((category) => {
+          const Icon = category.icon
+          const active = filters.category === category.id
+          return (
+            <button
+              key={category.id}
+              className={`grid min-h-[76px] place-items-center gap-1 rounded-2xl border text-xs font-extrabold transition ${
+                active ? 'border-teal-500 bg-teal-600 text-white' : 'border-white/10 bg-slate-800 text-slate-200'
+              }`}
+              type="button"
+              onClick={() => setFilters((current) => ({ ...current, category: active ? 'all' : category.id }))}
+            >
+              <Icon size={22} />
+              <span>{category.name}</span>
+            </button>
+          )
+        })}
+      </section>
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-base font-extrabold text-slate-950">الفئات</h3>
-          <span className="text-xs font-bold text-slate-500">اختر ما يناسبك</span>
+          <h2 className="text-base font-extrabold text-white">الإعلانات</h2>
+          <span className="text-xs font-bold text-slate-400">{listings.length} إعلان</span>
         </div>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
-          {categories.map((category) => {
-            const Icon = categoryIcons[category.id]
-            const active = filters.category === category.id
-            return (
-              <button
-                key={category.id}
-                className={`flex min-w-[104px] items-center gap-2 rounded-full border px-3 py-2.5 text-sm font-bold transition ${
-                  active ? 'border-teal-700 bg-teal-700 text-white' : 'border-slate-200 bg-white text-slate-700'
-                }`}
-                onClick={() => setFilters({ ...filters, category: active ? 'الكل' : category.id })}
-              >
-                <Icon size={18} />
-                {category.name}
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
-    <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-extrabold text-slate-950">إعلانات مقترحة</h3>
-          <span className="text-xs font-bold text-slate-500">{listings.length} إعلان</span>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              isSaved={savedIds.includes(listing.id)}
-              onOpen={() => onOpenListing(listing.id)}
-              onToggleSaved={() => onToggleSaved(listing.id)}
-            />
-          ))}
-        </div>
-        {listings.length === 0 && <EmptyState text="لا توجد إعلانات مطابقة للفلاتر الحالية." />}
+        {listings.length ? (
+          <div className="grid grid-cols-2 gap-3">
+            {listings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isSaved={savedIds.includes(listing.id)}
+                onOpen={() => onOpenListing(listing.id)}
+                onToggleSaved={() => onToggleSaved(listing.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState text="لا توجد إعلانات مطابقة." />
+        )}
       </section>
     </div>
   )
 }
 
-function FilterBar({ filters, setFilters }) {
-  return (
-    <section className="rounded-[18px] border border-slate-200 bg-white p-3">
-      <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-slate-800">
-        <SlidersHorizontal size={18} className="text-teal-700" />
-        تصفية سريعة
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <select className="select-compact" value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })}>
-          <option>الكل</option>
-          {cities.map((city) => (
-            <option key={city}>{city}</option>
-          ))}
-        </select>
-        <select className="select-compact" value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}>
-          <option value="الكل">كل الفئات</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <select className="select-compact" value={filters.maxPrice} onChange={(event) => setFilters({ ...filters, maxPrice: event.target.value })}>
-          <option value="الكل">كل الأسعار</option>
-          <option value="1000">حتى 1000</option>
-          <option value="5000">حتى 5000</option>
-          <option value="50000">حتى 50000</option>
-        </select>
-      </div>
-    </section>
-  )
-}
-
 function ListingCard({ listing, isSaved, onOpen, onToggleSaved }) {
   return (
-    <article className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm">
-      <button className="block w-full text-right" onClick={onOpen}>
-        <img src={listing.imageUrl} alt={listing.title} className="aspect-square w-full object-cover" />
+    <article className="overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-sm">
+      <button className="block w-full text-right" type="button" onClick={onOpen}>
+        <img src={listing.image_url || listing.imageUrl} alt={listing.title} className="aspect-square w-full object-cover" />
       </button>
-      <div className="relative min-w-0 p-2.5">
-        <button className="absolute left-2 top-[-44px] flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95" onClick={onToggleSaved} aria-label="حفظ الإعلان">
-          {isSaved ? <BookmarkCheck size={18} className="text-teal-700" /> : <Bookmark size={18} />}
-        </button>
-        <div>
-          <button className="min-w-0 text-right" onClick={onOpen}>
-            <p className="text-base font-extrabold text-slate-950">{formatPrice(listing.price)}</p>
-            <h4 className="mt-1 line-clamp-2 min-h-10 text-sm font-extrabold leading-5 text-slate-950">{listing.title}</h4>
+      <div className="p-3">
+        <div className="mb-2 flex items-start justify-between gap-2">
+          <button className="min-w-0 text-right" type="button" onClick={onOpen}>
+            <h3 className="line-clamp-2 min-h-10 text-sm font-extrabold leading-5 text-white">{listing.title}</h3>
+          </button>
+          <button className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-slate-200" type="button" onClick={onToggleSaved} aria-label="حفظ الإعلان">
+            {isSaved ? <BookmarkCheck size={18} className="text-teal-300" /> : <Bookmark size={18} />}
           </button>
         </div>
-        <div className="mt-2 grid gap-1 text-[11px] font-bold text-slate-500">
+        <p className="text-base font-extrabold text-teal-300">{formatPrice(listing.price)}</p>
+        <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-slate-400">
           <span>{listing.city}</span>
-          <span>{listing.status}</span>
+          <span>{categoryName(listing.category)}</span>
         </div>
       </div>
     </article>
@@ -375,53 +685,90 @@ function AddListingPage({ onPublish, userCity }) {
   const [form, setForm] = useState({
     title: '',
     price: '',
-    category: categories[0].id,
+    category: 'electronics',
     city: userCity,
     description: '',
-    imageUrl: ''
+    image_url: ''
   })
   const [preview, setPreview] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   function updateForm(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
   }
 
+  async function handleImageChange(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const extension = file.name.split('.').pop() || 'jpg'
+    const filePath = `${crypto.randomUUID()}.${extension}`
+    setPreview(URL.createObjectURL(file))
+    setErrorMessage('')
+    setIsUploading(true)
+
+    try {
+      const { error } = await supabase.storage.from('listing-images').upload(filePath, file, {
+        cacheControl: '3600',
+        contentType: file.type,
+        upsert: false
+      })
+      if (error) throw error
+      const { data } = supabase.storage.from('listing-images').getPublicUrl(filePath)
+      updateForm('image_url', data.publicUrl)
+    } catch (error) {
+      setPreview('')
+      setErrorMessage(error.message || 'تعذر رفع الصورة.')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   return (
     <form
-      className="space-y-4 pt-4"
-      onSubmit={(event) => {
+      className="space-y-4 pt-5"
+      onSubmit={async (event) => {
         event.preventDefault()
-        onPublish({
-          ...form,
-          price: Number(form.price),
-          imageUrl:
-            preview ||
-            'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80'
-        })
+        if (isUploading) {
+          setErrorMessage('انتظر حتى ينتهي رفع الصورة.')
+          return
+        }
+        if (!form.image_url) {
+          setErrorMessage('أضف صورة للإعلان أولًا.')
+          return
+        }
+        setIsPublishing(true)
+        setErrorMessage('')
+        try {
+          await onPublish(form)
+        } catch (error) {
+          setErrorMessage(error.message || 'تعذر نشر الإعلان.')
+        } finally {
+          setIsPublishing(false)
+        }
       }}
     >
-      <label className="flex aspect-[16/10] cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-teal-200 bg-white text-center">
+      <PageTitle title="إضافة إعلان" subtitle="صورة واضحة وتفاصيل مختصرة تكفي." />
+
+      <label className="flex aspect-[16/10] cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-teal-500/40 bg-slate-800 text-center">
         {preview ? (
           <img src={preview} alt="معاينة الإعلان" className="h-full w-full rounded-3xl object-cover" />
         ) : (
           <>
-            <ImagePlus size={34} className="text-teal-700" />
-            <span className="mt-3 text-sm font-extrabold text-slate-900">ارفع صورة المنتج</span>
-            <span className="mt-1 text-xs font-bold text-slate-500">صورة واضحة تزيد الثقة</span>
+            <Camera size={34} className="text-teal-300" />
+            <span className="mt-3 text-sm font-extrabold text-white">أضف صورة الإعلان</span>
+            <span className="mt-1 text-xs font-bold text-slate-400">اختر صورة من المعرض أو الكاميرا</span>
           </>
         )}
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(event) => {
-            const file = event.target.files?.[0]
-            if (file) setPreview(URL.createObjectURL(file))
-          }}
-        />
+        <input type="file" accept="image/*" className="hidden" disabled={isUploading || isPublishing} onChange={handleImageChange} />
       </label>
 
-      <Field label="عنوان المنتج">
+      {isUploading && <p className="text-sm font-bold text-teal-300">جاري رفع الصورة...</p>}
+      {errorMessage && <p className="text-sm font-bold text-rose-300">{errorMessage}</p>}
+
+      <Field label="عنوان الإعلان">
         <input required className="input" value={form.title} onChange={(event) => updateForm('title', event.target.value)} placeholder="مثال: آيفون 15 برو" />
       </Field>
       <Field label="السعر">
@@ -430,7 +777,7 @@ function AddListingPage({ onPublish, userCity }) {
       <div className="grid grid-cols-2 gap-3">
         <Field label="الفئة">
           <select className="input" value={form.category} onChange={(event) => updateForm('category', event.target.value)}>
-            {categories.map((category) => (
+            {categoryOptions.slice(1).map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
@@ -445,226 +792,259 @@ function AddListingPage({ onPublish, userCity }) {
           </select>
         </Field>
       </div>
-      <Field label="وصف مختصر">
-        <textarea
-          required
-          className="input min-h-28 resize-none leading-6"
-          value={form.description}
-          onChange={(event) => updateForm('description', event.target.value)}
-          placeholder="اذكر الحالة، مدة الاستخدام، وما يشجع المشتري."
-        />
+      <Field label="الوصف">
+        <textarea required className="input min-h-28 resize-none leading-6" value={form.description} onChange={(event) => updateForm('description', event.target.value)} placeholder="اكتب حالة المنتج وأهم التفاصيل." />
       </Field>
 
-      <button className="btn-primary w-full" type="submit">
-        نشر الإعلان
+      <button className="btn-primary w-full disabled:opacity-70" type="submit" disabled={isUploading || isPublishing}>
+        {isPublishing ? 'جاري النشر...' : 'نشر الإعلان'}
       </button>
     </form>
   )
 }
 
-function DetailsPage({ listing, seller, isSaved, onBack, onChat, onToggleSaved }) {
-  return (
-    <div className="space-y-4 pt-4">
-      <button className="flex items-center gap-1 text-sm font-extrabold text-slate-600" onClick={onBack}>
-        <ChevronLeft size={18} />
-        رجوع للإعلانات
-      </button>
-
-      <section className="overflow-hidden rounded-3xl bg-white shadow-sm">
-        <img src={listing.imageUrl} alt={listing.title} className="aspect-[16/11] w-full object-cover" />
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-extrabold leading-tight text-slate-950">{listing.title}</h1>
-              <p className="mt-2 text-xl font-extrabold text-teal-700">{formatPrice(listing.price)}</p>
-            </div>
-            <button className="icon-button" onClick={onToggleSaved} aria-label="حفظ الإعلان">
-              {isSaved ? <BookmarkCheck size={21} className="text-teal-700" /> : <Bookmark size={21} />}
-            </button>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Pill>{listing.city}</Pill>
-            <Pill>{listing.status}</Pill>
-            <Pill>{getRelativeDate(listing.createdAt)}</Pill>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-extrabold text-slate-950">الوصف</h2>
-        <p className="mt-2 text-sm leading-7 text-slate-600">{listing.description}</p>
-      </section>
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
-              <CircleUserRound size={26} />
-            </div>
-            <div>
-              <div className="flex items-center gap-1">
-                <h3 className="font-extrabold text-slate-950">{seller.name}</h3>
-                {seller.verified && <BadgeCheck size={17} className="text-teal-700" />}
-              </div>
-              <p className="mt-1 text-xs font-bold text-slate-500">{seller.city}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-sm font-extrabold text-amber-700">
-            <Star size={15} fill="currentColor" />
-            {seller.rating}
-          </div>
-        </div>
-      </section>
-
-      <div className="grid grid-cols-[1fr_auto] gap-3">
-        <button className="btn-primary" onClick={onChat}>
-          <MessageCircle size={19} />
-          مراسلة البائع
-        </button>
-        <button className="btn-secondary" onClick={onToggleSaved} aria-label="حفظ الإعلان">
-          <Heart size={20} fill={isSaved ? 'currentColor' : 'none'} />
-        </button>
+function ExplorePage({ listings, savedIds, onOpenListing, onToggleSaved }) {
+  if (!listings.length) {
+    return (
+      <div className="pt-5">
+        <PageTitle title="استكشف" subtitle="ستظهر العروض الجديدة هنا." />
+        <EmptyState text="لا توجد عروض للاستكشاف حتى الآن." />
       </div>
-    </div>
-  )
-}
-
-function ChatPage({ user, onOpenListing }) {
-  const [activeListingId, setActiveListingId] = useState(102)
-  const [draft, setDraft] = useState('')
-  const [localMessages, setLocalMessages] = useState(messages)
-  const conversations = useMemo(() => {
-    const ids = [...new Set(localMessages.map((message) => message.listingId))]
-    return ids.map((id) => seedListings.find((listing) => listing.id === id)).filter(Boolean)
-  }, [localMessages])
-  const thread = localMessages.filter((message) => message.listingId === activeListingId)
-  const activeListing = seedListings.find((listing) => listing.id === activeListingId)
+    )
+  }
 
   return (
-    <div className="space-y-4 pt-4">
-      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
-        {conversations.map((listing) => (
-          <button
-            key={listing.id}
-            className={`min-w-[180px] rounded-2xl border p-3 text-right ${
-              activeListingId === listing.id ? 'border-teal-700 bg-teal-50' : 'border-slate-200 bg-white'
-            }`}
-            onClick={() => setActiveListingId(listing.id)}
-          >
-            <p className="truncate text-sm font-extrabold text-slate-950">{listing.title}</p>
-            <p className="mt-1 text-xs font-bold text-slate-500">{listing.city}</p>
-          </button>
-        ))}
-      </div>
+    <div className="-mx-4 bg-slate-950">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-slate-950/90 px-4 py-4 backdrop-blur">
+        <div>
+          <h1 className="text-xl font-extrabold text-white">استكشف</h1>
+          <p className="mt-1 text-xs font-bold text-slate-400">تصفح العروض الجديدة بسرعة</p>
+        </div>
+        <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-slate-900 text-slate-100">
+          <Compass size={22} />
+        </div>
+      </header>
 
-      <section className="rounded-3xl border border-slate-200 bg-white">
-        <button className="flex w-full items-center justify-between border-b border-slate-100 p-4 text-right" onClick={() => onOpenListing(activeListingId)}>
-          <div>
-            <h3 className="font-extrabold text-slate-950">{activeListing?.title}</h3>
-            <p className="mt-1 text-xs font-bold text-teal-700">اضغط لعرض الإعلان</p>
-          </div>
-          <ChevronLeft size={18} />
-        </button>
-
-        <div className="space-y-3 p-4">
-          {thread.map((message) => {
-            const mine = message.senderId === user.id
+      <section className="snap-y snap-mandatory overflow-y-auto px-4 pb-3 pt-4">
+        <div className="space-y-4">
+          {listings.map((listing) => {
+            const saved = savedIds.includes(listing.id)
             return (
-              <div key={message.id} className={`flex ${mine ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-6 ${mine ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-700'}`}>
-                  <p>{message.text}</p>
-                  <span className={`mt-1 block text-[11px] font-bold ${mine ? 'text-teal-100' : 'text-slate-400'}`}>{message.createdAt}</span>
+              <article key={listing.id} className="relative min-h-[620px] snap-start overflow-hidden rounded-[28px] border border-white/10 bg-slate-900 shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
+                <button className="block h-full w-full text-right" type="button" onClick={() => onOpenListing(listing.id)}>
+                  <img src={listing.image_url || listing.imageUrl} alt={listing.title} className="absolute inset-0 h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10" />
+                  <div className="absolute bottom-0 right-0 left-0 p-4 pb-5">
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
+                        {categoryName(listing.category)}
+                      </span>
+                      <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
+                        {listing.city}
+                      </span>
+                    </div>
+                    <h2 className="text-2xl font-extrabold leading-tight text-white">{listing.title}</h2>
+                    <p className="mt-2 text-3xl font-extrabold text-teal-300">{formatPrice(listing.price)}</p>
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-200">{listing.description}</p>
+                  </div>
+                </button>
+
+                <div className="absolute bottom-28 left-4 grid gap-3">
+                  <button
+                    className="grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-black/35 text-white backdrop-blur transition active:scale-95"
+                    type="button"
+                    aria-label="حفظ العرض"
+                    onClick={() => onToggleSaved(listing.id)}
+                  >
+                    {saved ? <BookmarkCheck size={22} className="text-teal-300" /> : <Bookmark size={22} />}
+                  </button>
+                  <button
+                    className="grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-black/35 text-white backdrop-blur transition active:scale-95"
+                    type="button"
+                    aria-label="مراسلة البائع"
+                  >
+                    <MessageCircle size={22} />
+                  </button>
                 </div>
-              </div>
+              </article>
             )
           })}
         </div>
-
-        <form
-          className="flex items-center gap-2 border-t border-slate-100 p-3"
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (!draft.trim()) return
-            setLocalMessages((items) => [
-              ...items,
-              { id: Date.now(), senderId: user.id, receiverId: 2, listingId: activeListingId, text: draft, createdAt: 'الآن' }
-            ])
-            setDraft('')
-          }}
-        >
-          <input className="input h-12" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="اكتب رسالتك..." />
-          <button className="btn-primary h-12 w-12 shrink-0 p-0" aria-label="إرسال">
-            <Send size={18} />
-          </button>
-        </form>
       </section>
     </div>
   )
 }
 
-function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing }) {
+function DetailsPage({ listing, isSaved, onBack, onToggleSaved }) {
+  return (
+    <div className="space-y-4 pt-5">
+      <button className="flex items-center gap-1 text-sm font-extrabold text-slate-300" type="button" onClick={onBack}>
+        <ChevronLeft size={18} />
+        رجوع
+      </button>
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-slate-800 shadow-sm">
+        <img src={listing.image_url || listing.imageUrl} alt={listing.title} className="aspect-[16/11] w-full object-cover" />
+        <div className="space-y-4 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-extrabold leading-tight text-white">{listing.title}</h1>
+              <p className="mt-2 text-xl font-extrabold text-teal-300">{formatPrice(listing.price)}</p>
+            </div>
+            <button className="icon-button" type="button" onClick={onToggleSaved} aria-label="حفظ الإعلان">
+              {isSaved ? <BookmarkCheck size={21} className="text-teal-700" /> : <Bookmark size={21} />}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Pill>{listing.city}</Pill>
+            <Pill>{categoryName(listing.category)}</Pill>
+            <Pill>{listing.status || 'متاح'}</Pill>
+          </div>
+          <div>
+            <h2 className="font-extrabold text-white">الوصف</h2>
+            <p className="mt-2 text-sm leading-7 text-slate-300">{listing.description}</p>
+          </div>
+        </div>
+      </section>
+      <button className="btn-primary w-full" type="button">
+        <MessageCircle size={19} />
+        مراسلة البائع
+      </button>
+    </div>
+  )
+}
+
+function MessagesPage() {
+  return (
+    <div className="pt-5">
+      <PageTitle title="المحادثات" subtitle="ستظهر محادثاتك هنا." />
+      <EmptyState text="لا توجد محادثات حتى الآن." />
+    </div>
+  )
+}
+
+function SavedPage({ listings, onOpenListing }) {
+  return (
+    <div className="pt-5">
+      <PageTitle title="المحفوظات" subtitle="الإعلانات التي حفظتها للرجوع إليها لاحقًا." />
+      <CompactListingList listings={listings} onOpenListing={onOpenListing} />
+    </div>
+  )
+}
+
+function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpenStudio }) {
   const myListings = listings.filter((listing) => listing.userId === user.id)
   const saved = listings.filter((listing) => savedIds.includes(listing.id))
 
   return (
-    <div className="space-y-4 pt-4">
-      <section className="rounded-3xl bg-slate-950 p-5 text-white">
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10">
-            <CircleUserRound size={36} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold">{user.name}</h1>
-              <BadgeCheck size={18} className="text-teal-200" />
-            </div>
-            <p className="mt-1 text-sm text-slate-300">{user.phone} · {user.city}</p>
+    <div className="profile-screen -mx-4 min-h-screen px-4 pb-4 pt-5 text-white">
+      <header className="mb-5 flex items-center justify-between">
+        <button className="profile-top-button" type="button" aria-label="الإعدادات">
+          <Settings size={22} />
+        </button>
+        <h1 className="text-lg font-extrabold text-white">حسابي</h1>
+        <button className="profile-top-button" type="button" aria-label="المحفظة">
+          <Wallet size={22} />
+        </button>
+      </header>
+
+      <section className="rounded-[30px] border border-[#232A34] bg-[linear-gradient(145deg,#151A21,#0B0F14)] p-5 text-center shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
+        <div className="mx-auto grid h-28 w-28 place-items-center rounded-full bg-[#060A0F] p-2 text-white">
+          <div className="h-full w-full overflow-hidden rounded-full bg-[#060A0F]">
+            <img className="h-full w-full object-contain p-1" src={profileStillSrc} alt="أيقونة الحساب" />
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-2">
+
+        <h2 className="mt-4 text-2xl font-extrabold">{user.name}</h2>
+        <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-extrabold text-slate-100">
+          <ShieldCheck size={15} />
+          بائع موثوق
+        </div>
+        <div className="mt-3 flex items-center justify-center gap-1 text-amber-300">
+          {[1, 2, 3, 4, 5].map((item) => (
+            <Star key={item} size={14} fill="currentColor" />
+          ))}
+          <span className="mr-1 text-xs font-bold text-slate-300">4.8 · 36 مراجعة</span>
+        </div>
+        <p className="mt-2 text-sm font-bold text-slate-400">{user.city} · عضو منذ يناير 2022</p>
+
+        <div className="mt-6 grid grid-cols-3 gap-2">
           <Metric label="إعلاناتي" value={myListings.length} />
-          <Metric label="محفوظة" value={saved.length} />
-          <Metric label="التقييم" value={user.rating} />
+          <Metric label="المفضلة" value={saved.length} />
+          <Metric label="المتابعون" value={47} />
         </div>
       </section>
 
-      <ProfileSection title="توثيق المستخدم">
-        <div className="flex items-center justify-between rounded-2xl bg-teal-50 p-4 text-teal-900">
-          <div className="flex items-center gap-3">
-            <UserRoundCheck size={22} />
-            <div>
-              <p className="font-extrabold">الحساب موثق</p>
-              <p className="mt-1 text-xs font-bold text-teal-700">رقم الجوال والمدينة مؤكدان</p>
-            </div>
+      <ProfileSection title="إعلاناتي" action="عرض الكل">
+        <div className="grid min-h-44 place-items-center rounded-3xl border border-dashed border-[#232A34] bg-[#151A21]/60 p-5 text-center">
+          <div>
+            <Camera size={34} className="mx-auto text-slate-300" />
+            <p className="mt-3 text-sm font-extrabold text-white">بإمكانك إضافة إعلان من الاستديو</p>
+            <p className="mt-1 text-xs font-bold text-slate-400">اختر صورة من جهازك وابدأ إعلانك بسرعة.</p>
+            <button className="mt-4 rounded-2xl bg-slate-100 px-5 py-3 text-sm font-extrabold text-slate-950 transition active:scale-[0.98]" type="button" onClick={onOpenStudio}>
+              فتح الاستديو
+            </button>
           </div>
-          <BadgeCheck size={22} />
         </div>
       </ProfileSection>
 
-      <ProfileSection title="إعلاناتي">
-        <CompactListingList listings={myListings} onOpenListing={onOpenListing} />
-      </ProfileSection>
+      <section className="mt-5 space-y-2">
+        <ProfileMenuItem icon={Heart} label="المفضلة" value={saved.length} onClick={() => {}} />
+        <ProfileMenuItem icon={MessageCircle} label="الرسائل" />
+        <ProfileMenuItem icon={MapPin} label="العنوان" value={user.city} />
+        <ProfileMenuItem icon={Settings} label="الإعدادات" />
+      </section>
 
-      <ProfileSection title="الإعلانات المحفوظة">
-        <CompactListingList listings={saved} onOpenListing={onOpenListing} />
-      </ProfileSection>
-
-      <ProfileSection title="التقييمات">
-        <div className="rounded-2xl bg-white p-4">
-          <div className="mb-2 flex items-center gap-1 text-amber-600">
-            {[1, 2, 3, 4, 5].map((item) => (
-              <Star key={item} size={17} fill="currentColor" />
-            ))}
-          </div>
-          <p className="text-sm leading-6 text-slate-600">بائع سريع في الرد، ووصف المنتجات واضح ودقيق.</p>
-        </div>
-      </ProfileSection>
-
-      <button className="btn-danger w-full" onClick={onLogout}>
+      <button className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-extrabold text-white transition active:scale-[0.98]" type="button" onClick={onLogout}>
         <LogOut size={19} />
-        تسجيل خروج
+        تسجيل الخروج
       </button>
     </div>
+  )
+}
+
+function ProfileListingCard({ listing, onOpenListing }) {
+  const status = listing.status || 'متاح'
+  const statusClass =
+    status === 'مباع'
+      ? 'bg-rose-500/12 text-rose-300 border-rose-400/20'
+      : status === 'محجوز'
+        ? 'bg-amber-400/12 text-amber-200 border-amber-300/20'
+        : 'bg-slate-200/10 text-slate-200 border-white/15'
+
+  return (
+    <button className="overflow-hidden rounded-3xl border border-[#232A34] bg-[#151A21] text-right shadow-[0_16px_35px_rgba(0,0,0,0.26)] transition hover:border-white/20 active:scale-[0.98]" type="button" onClick={() => onOpenListing(listing.id)}>
+      <div className="relative">
+        <img src={listing.image_url || listing.imageUrl} alt={listing.title} className="h-32 w-full object-cover" />
+        <span className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-black/45 text-white backdrop-blur">
+          <Heart size={15} />
+        </span>
+        <span className={`absolute bottom-2 left-2 rounded-full border px-2 py-1 text-[10px] font-extrabold backdrop-blur ${statusClass}`}>
+          {status}
+        </span>
+      </div>
+      <div className="p-3">
+        <p className="text-base font-extrabold text-slate-100">{formatPrice(listing.price)}</p>
+        <p className="mt-1 truncate text-sm font-extrabold text-white">{listing.title}</p>
+        <p className="mt-2 truncate text-xs font-bold text-slate-400">{listing.city}</p>
+      </div>
+    </button>
+  )
+}
+
+function ProfileMenuItem({ icon: Icon, label, value, onClick }) {
+  return (
+    <button className="flex min-h-14 w-full items-center justify-between rounded-2xl border border-[#232A34] bg-[#151A21] px-4 text-right transition hover:border-white/20 hover:bg-[#18202A] active:scale-[0.99]" type="button" onClick={onClick}>
+      <ChevronLeft size={18} className="text-slate-500" />
+      <div className="flex items-center gap-3">
+        <div>
+          <p className="text-sm font-extrabold text-white">{label}</p>
+          {value !== undefined && <p className="mt-0.5 text-xs font-bold text-slate-400">{value}</p>}
+        </div>
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-slate-100">
+          <Icon size={20} />
+        </span>
+      </div>
+    </button>
   )
 }
 
@@ -674,49 +1054,47 @@ function CompactListingList({ listings, onOpenListing }) {
   return (
     <div className="space-y-2">
       {listings.map((listing) => (
-        <button key={listing.id} className="flex w-full items-center gap-3 rounded-2xl bg-white p-2 text-right" onClick={() => onOpenListing(listing.id)}>
-          <img src={listing.imageUrl} alt={listing.title} className="h-16 w-16 rounded-xl object-cover" />
+        <button key={listing.id} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-slate-800 p-2 text-right shadow-sm" type="button" onClick={() => onOpenListing(listing.id)}>
+          <img src={listing.image_url || listing.imageUrl} alt={listing.title} className="h-16 w-16 rounded-xl object-cover" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-extrabold text-slate-950">{listing.title}</p>
-            <p className="mt-1 text-xs font-bold text-teal-700">{formatPrice(listing.price)}</p>
+            <p className="truncate text-sm font-extrabold text-white">{listing.title}</p>
+            <p className="mt-1 text-xs font-bold text-teal-300">{formatPrice(listing.price)}</p>
           </div>
-          <ChevronLeft size={17} className="text-slate-400" />
+          <ChevronLeft size={17} className="text-slate-500" />
         </button>
       ))}
     </div>
   )
 }
 
-function BottomNav({ activePage, setActivePage }) {
+function BottomNav({ activePage, setActivePage, homeShapeId }) {
   const items = [
     { id: 'profile', label: 'حسابي', icon: CircleUserRound },
-    { id: 'chat', label: 'المحادثات', icon: MessageCircle },
+    { id: 'chat', label: 'رسائل', icon: Send },
     { id: 'home', label: 'الرئيسية', icon: Home },
-    { id: 'add', label: 'إضافة', icon: Plus },
-    { id: 'profile', label: 'محفوظة', icon: Bookmark }
+    { id: 'explore', label: 'استكشف', icon: Compass },
+    { id: 'saved', label: 'محفوظات', icon: Bookmark }
   ]
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-30 w-full max-w-md -translate-x-1/2 border-t border-slate-200 bg-white/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2 backdrop-blur md:bottom-6 md:rounded-b-[32px]">
-      <div className="grid grid-cols-5 gap-1.5">
+    <nav className="fixed bottom-0 left-1/2 z-30 w-full max-w-md -translate-x-1/2 border-t border-white/10 bg-slate-950/95 px-3 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2 backdrop-blur md:bottom-5 md:rounded-b-[28px]">
+      <div className="grid grid-cols-5 gap-1">
         {items.map((item) => {
           const Icon = item.icon
           const active = activePage === item.id
           return (
-            <button
-              key={item.id}
-              className={`flex h-[60px] flex-col items-center justify-center gap-1 rounded-[18px] bg-transparent text-[11px] font-extrabold transition active:scale-95 ${
-                active ? 'text-teal-700' : 'text-slate-500'
-              } ${item.id === 'home' ? '-translate-y-2' : ''}`}
-              onClick={() => setActivePage(item.id)}
-            >
-              <span
-                className={`grid h-10 w-10 place-items-center rounded-full transition ${
-                  active ? 'bg-teal-700 text-white shadow-[0_10px_22px_rgba(15,118,110,0.22)]' : ''
-                }`}
-              >
+            <button key={item.id} className={`flex h-[58px] flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-extrabold transition ${active ? 'bg-teal-500/15 text-teal-300' : 'text-slate-400'}`} type="button" onClick={() => setActivePage(item.id)}>
+              {item.id === 'home' ? (
+                <span className={`nav-home-mark ${active ? 'nav-home-mark-active' : ''}`}>
+                  <img className="shape-medallion nav-home-image" src={shapeImageSrc(homeShapeId)} alt="" />
+                </span>
+              ) : item.id === 'profile' ? (
+                <span className={`grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-white ${active ? 'ring-2 ring-slate-300/70' : ''}`}>
+                  <img className="h-full w-full object-contain p-0.5" src={active ? profileGifSrc : profileStillSrc} alt="" />
+                </span>
+              ) : (
                 <Icon size={21} strokeWidth={2.2} />
-              </span>
+              )}
               <span>{item.label}</span>
             </button>
           )
@@ -726,32 +1104,79 @@ function BottomNav({ activePage, setActivePage }) {
   )
 }
 
+function ShapeGallery({ shapes, selectedShapeId, onSelectShape }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-slate-800/80 p-4">
+      <div className="grid grid-cols-3 gap-4">
+        {shapes.map((shape) => (
+          <button
+            key={shape.id}
+            className={`rounded-3xl border p-2 text-center transition active:scale-[0.98] ${
+              selectedShapeId === shape.id ? 'border-teal-300 bg-teal-500/10' : 'border-transparent'
+            }`}
+            type="button"
+            onClick={() => onSelectShape(shape.id)}
+          >
+            <DecorativeShape shape={shape} />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DecorativeShape({ shape, size = 'md' }) {
+  return (
+    <div className="text-center">
+      <img
+        className={`shape-medallion ${size === 'sm' ? 'shape-medallion-sm' : ''}`}
+        src={shapeImageSrc(shape.id)}
+        alt=""
+        aria-hidden="true"
+      />
+      {size !== 'sm' && <p className="mt-2 text-[11px] font-extrabold leading-4 text-slate-200">{shape.id}. {shape.name}</p>}
+    </div>
+  )
+}
+
+function PageTitle({ title, subtitle }) {
+  return (
+    <header>
+      <h1 className="text-2xl font-extrabold text-white">{title}</h1>
+      <p className="mt-1 text-sm font-bold text-slate-400">{subtitle}</p>
+    </header>
+  )
+}
+
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-extrabold text-slate-800">{label}</span>
+      <span className="mb-2 block text-sm font-extrabold text-slate-200">{label}</span>
       {children}
     </label>
   )
 }
 
 function Pill({ children }) {
-  return <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-600">{children}</span>
+  return <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-extrabold text-slate-200">{children}</span>
 }
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-2xl bg-white/10 p-3 text-center">
-      <p className="text-lg font-extrabold">{value}</p>
-      <p className="mt-1 text-xs font-bold text-slate-300">{label}</p>
+    <div className="rounded-2xl border border-[#232A34] bg-[#151A21] px-2 py-3 text-center">
+      <p className="text-lg font-extrabold text-white">{value}</p>
+      <p className="mt-1 text-xs font-bold text-slate-400">{label}</p>
     </div>
   )
 }
 
-function ProfileSection({ title, children }) {
+function ProfileSection({ title, action, children }) {
   return (
-    <section>
-      <h2 className="mb-2 text-base font-extrabold text-slate-950">{title}</h2>
+    <section className="mt-5">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-base font-extrabold text-white">{title}</h2>
+        {action && <button className="text-xs font-extrabold text-slate-300" type="button">{action}</button>}
+      </div>
       {children}
     </section>
   )
@@ -759,9 +1184,9 @@ function ProfileSection({ title, children }) {
 
 function EmptyState({ text }) {
   return (
-    <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-center">
-      <X size={24} className="mx-auto text-slate-400" />
-      <p className="mt-2 text-sm font-bold text-slate-500">{text}</p>
+    <div className="rounded-3xl border border-dashed border-white/15 bg-slate-800 p-6 text-center">
+      <X size={24} className="mx-auto text-slate-500" />
+      <p className="mt-2 text-sm font-bold text-slate-400">{text}</p>
     </div>
   )
 }

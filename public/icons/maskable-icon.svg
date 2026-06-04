@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Saree app maskable icon">
+  <rect width="512" height="512" fill="#0f766e"/>
+  <circle cx="256" cy="256" r="148" fill="#f7faf9"/>
+  <path d="M163 224h186c32 0 59 27 59 59v8H104v-8c0-32 27-59 59-59Z" fill="#14b8a6"/>
+  <path d="M171 192h170l37 64H134l37-64Z" fill="#0f172a"/>
+  <circle cx="184" cy="317" r="29" fill="#0f172a"/>
+  <circle cx="328" cy="317" r="29" fill="#0f172a"/>
+  <path d="M184 147h144" stroke="#f7faf9" stroke-width="32" stroke-linecap="round"/>
+</svg>
