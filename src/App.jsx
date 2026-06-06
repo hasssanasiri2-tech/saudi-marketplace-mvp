@@ -148,6 +148,7 @@ function shapeImageSrc(id) {
 
 const profileGifSrc = '/profile/arab-man.gif'
 const profileStillSrc = '/profile/arab-man-clean.png'
+const profileNavSrc = '/profile/arab-man-nav.png'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -1101,8 +1102,8 @@ function BottomNav({ activePage, setActivePage, homeShapeId }) {
                   <img className="shape-medallion nav-home-image" src={shapeImageSrc(homeShapeId)} alt="" />
                 </span>
               ) : item.id === 'profile' ? (
-                <span className={`grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-white ${active ? 'ring-2 ring-slate-300/70' : ''}`}>
-                  <img className="h-full w-full object-contain p-0.5" src={active ? profileGifSrc : profileStillSrc} alt="" />
+                <span className={`nav-profile-mark ${active ? 'nav-profile-mark-active' : ''}`}>
+                  <img className={`nav-profile-image ${active ? 'nav-profile-image-active' : ''}`} src={profileNavSrc} alt="" />
                 </span>
               ) : (
                 <Icon size={21} strokeWidth={2.2} />
