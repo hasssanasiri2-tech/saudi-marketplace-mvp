@@ -1,9 +1,9 @@
-const CACHE_NAME = 'saree-pwa-v1'
-const APP_SHELL = ['/', '/manifest.json', '/icons/icon-192.svg', '/icons/icon-512.svg', '/icons/maskable-icon.svg']
+const CACHE_NAME = 'saree-pwa-v2'
+const STATIC_ASSETS = ['/', '/icons/icon-192.svg', '/icons/icon-512.svg', '/icons/maskable-icon.svg']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   )
   self.skipWaiting()
 })
@@ -29,26 +29,37 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  if (requestUrl.pathname === '/manifest.json' || requestUrl.pathname === '/sw.js') {
+    return
+  }
+
   if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request).catch(() => caches.match('/'))
-    )
+    event.respondWith(fetch(request).catch(() => caches.match('/')))
+    return
+  }
+
+  const isStaticAsset =
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    request.destination === 'image' ||
+    request.destination === 'font'
+
+  if (!isStaticAsset) {
     return
   }
 
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse
-      }
-
-      return fetch(request).then((networkResponse) => {
-        const responseToCache = networkResponse.clone()
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, responseToCache)
-        })
+    caches.match(request).then((cachedResponse) =>
+      cachedResponse ||
+      fetch(request).then((networkResponse) => {
+        if (networkResponse.ok) {
+          const responseToCache = networkResponse.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseToCache)
+          })
+        }
         return networkResponse
       })
-    })
+    )
   )
 })

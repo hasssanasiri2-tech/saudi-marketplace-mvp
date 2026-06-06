@@ -25,8 +25,8 @@ cp .env.example .env
 ضع قيم Supabase داخل `.env`:
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-public-anon-key
+VITE_SUPABASE_URL=https://fealpdyveipbxvyekpzz.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-publishable-key
 ```
 
 شغل التطبيق:
@@ -50,7 +50,15 @@ http://127.0.0.1:5173
 
 لا تستخدم أسماء أخرى مثل `SUPABASE_URL` أو `NEXT_PUBLIC_SUPABASE_URL` داخل هذا المشروع.
 
-مفتاح `anon` عام ومناسب للواجهة الأمامية عند ضبط سياسات RLS في Supabase. لا تضع مفاتيح سرية داخل Vite أو GitHub أو Vercel.
+يجب أن تكون قيمة `VITE_SUPABASE_URL` هي رابط المشروع فقط:
+
+```text
+https://fealpdyveipbxvyekpzz.supabase.co
+```
+
+لا تضف `/rest/v1` في نهاية الرابط.
+
+يجب أن تكون قيمة `VITE_SUPABASE_ANON_KEY` هي مفتاح publishable العام من Supabase. لا تضع مفاتيح سرية داخل Vite أو GitHub أو Vercel.
 
 ## البناء
 
@@ -73,8 +81,8 @@ npm run preview
    - Output Directory: `dist`
 4. افتح Project Settings في Vercel.
 5. ادخل إلى Environment Variables.
-6. أضف المتغير `VITE_SUPABASE_URL`.
-7. أضف المتغير `VITE_SUPABASE_ANON_KEY`.
+6. أضف المتغير `VITE_SUPABASE_URL` بالقيمة `https://fealpdyveipbxvyekpzz.supabase.co`.
+7. أضف المتغير `VITE_SUPABASE_ANON_KEY` من Supabase.
 8. فعّل المتغيرات على Production و Preview.
 9. احفظ الإعدادات ثم أعد النشر Redeploy بعد الحفظ.
 
