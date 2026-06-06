@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { supabase } from './lib/supabase'
+import { supabase, supabaseConfigError } from './lib/supabase'
 import {
   Bell,
   Bookmark,
@@ -161,6 +161,7 @@ export default function App() {
   const [homeShapeId, setHomeShapeId] = useState(() => Number(window.localStorage.getItem('homeShapeId')) || 2)
 
   useEffect(() => {
+    if (supabaseConfigError) return
     fetchListings()
   }, [])
 
@@ -172,6 +173,11 @@ export default function App() {
     let mounted = true
 
     async function loadSession() {
+      if (supabaseConfigError) {
+        setAuthLoading(false)
+        return
+      }
+
       const { data } = await supabase.auth.getSession()
       if (!mounted) return
       setSession(data.session)
@@ -218,6 +224,8 @@ export default function App() {
   }
 
   async function fetchListings() {
+    if (supabaseConfigError) return
+
     const { data, error } = await supabase.from('listings').select('*')
     if (error) {
       console.log(error)
@@ -281,6 +289,10 @@ export default function App() {
   async function handleAuthReady(nextSession) {
     setSession(nextSession)
     await loadProfile(nextSession)
+  }
+
+  if (supabaseConfigError) {
+    return <SupabaseConfigError message={supabaseConfigError} />
   }
 
   if (authLoading) {
@@ -1187,6 +1199,18 @@ function EmptyState({ text }) {
     <div className="rounded-3xl border border-dashed border-white/15 bg-slate-800 p-6 text-center">
       <X size={24} className="mx-auto text-slate-500" />
       <p className="mt-2 text-sm font-bold text-slate-400">{text}</p>
+    </div>
+  )
+}
+
+function SupabaseConfigError({ message }) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-5" dir="rtl">
+      <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-slate-900 p-6 text-center shadow-soft">
+        <ShieldCheck size={32} className="mx-auto text-teal-300" />
+        <h1 className="mt-4 text-lg font-extrabold text-white">تعذر الاتصال</h1>
+        <p className="mt-2 text-sm font-bold leading-6 text-slate-300">{message}</p>
+      </div>
     </div>
   )
 }
