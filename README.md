@@ -56,7 +56,7 @@ http://127.0.0.1:5173
 https://fealpdyveipbxvyekpzz.supabase.co
 ```
 
-لا تضف `/rest/v1` في نهاية الرابط.
+استخدم رابط المشروع فقط بدون أي مسار إضافي في نهاية الرابط.
 
 يجب أن تكون قيمة `VITE_SUPABASE_ANON_KEY` هي مفتاح publishable العام من Supabase. لا تضع مفاتيح سرية داخل Vite أو GitHub أو Vercel.
 

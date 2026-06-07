@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
 const expectedSupabaseUrl = 'https://fealpdyveipbxvyekpzz.supabase.co'
+const forbiddenSupabasePath = ['rest', 'v1'].join('/')
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 const hasSupabaseUrl = Boolean(supabaseUrl)
 const hasSupabaseAnonKey = Boolean(supabaseAnonKey)
-const hasValidSupabaseUrl = supabaseUrl === expectedSupabaseUrl
+const hasRestPath = Boolean(supabaseUrl?.includes(forbiddenSupabasePath))
+const hasValidSupabaseUrl = supabaseUrl === expectedSupabaseUrl && !hasRestPath
 const secretKeyPrefix = ['sb', 'secret'].join('_') + '_'
 const hasValidAnonKey = Boolean(
   supabaseAnonKey &&
@@ -15,15 +17,15 @@ const hasValidAnonKey = Boolean(
 
 export const supabaseConfigError = (() => {
   if (!hasSupabaseUrl || !hasSupabaseAnonKey) {
-    return 'إعدادات الاتصال غير مكتملة. تأكد من متغيرات Supabase في Vercel.'
+    return 'Connection settings are incomplete. Check Supabase environment variables in Vercel.'
   }
 
   if (!hasValidSupabaseUrl) {
-    return 'رابط Supabase غير صحيح. استخدم رابط المشروع بدون /rest/v1.'
+    return 'Supabase URL is invalid. Use only the project URL with no extra path.'
   }
 
   if (!hasValidAnonKey) {
-    return 'مفتاح Supabase غير صحيح. استخدم مفتاح publishable العام فقط.'
+    return 'Supabase key is invalid. Use only the public publishable key.'
   }
 
   return ''
