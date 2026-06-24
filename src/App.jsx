@@ -959,6 +959,29 @@ function SavedPage({ listings, onOpenListing }) {
 
 function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpenStudio }) {
   const myListings = listings.filter((listing) => listing.userId === user.id)
+  const savedCount = savedIds.length
+  const accountSections = [
+    {
+      icon: Package,
+      title: 'إعلاناتي',
+      subtitle: myListings.length ? myListings.length + ' إعلان منشور' : 'إدارة الإعلانات التي تنشرها'
+    },
+    {
+      icon: Bookmark,
+      title: 'المحفوظات',
+      subtitle: savedCount ? savedCount + ' إعلان محفوظ' : 'العروض التي حفظتها للرجوع إليها'
+    },
+    {
+      icon: MessageCircle,
+      title: 'الرسائل',
+      subtitle: 'محادثات البيع والشراء'
+    },
+    {
+      icon: Settings,
+      title: 'إعدادات الحساب',
+      subtitle: 'الخصوصية، بيانات التواصل، والتنبيهات'
+    }
+  ]
 
   return (
     <div className="profile-screen -mx-4 min-h-screen px-4 pb-4 pt-5 text-white">
@@ -992,7 +1015,33 @@ function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpen
         </button>
       </div>
 
-      <section className="mt-6">
+      <section className="profile-sell-cta">
+        <div>
+          <h2>ابدأ البيع الآن</h2>
+          <p>أضف إعلانك الأول خلال دقيقة</p>
+        </div>
+        <button type="button" onClick={onOpenStudio}>إضافة إعلان</button>
+      </section>
+
+      <section className="profile-section-list" aria-label="أقسام الحساب">
+        {accountSections.map((section) => {
+          const Icon = section.icon
+          return (
+            <button key={section.title} className="profile-section-row" type="button">
+              <ChevronLeft size={17} className="profile-section-chevron" />
+              <div className="profile-section-content">
+                <span className="profile-section-icon"><Icon size={19} /></span>
+                <div>
+                  <h3>{section.title}</h3>
+                  <p>{section.subtitle}</p>
+                </div>
+              </div>
+            </button>
+          )
+        })}
+      </section>
+
+      <section className="mt-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-extrabold text-white">إعلاناتي</h2>
           <span className="text-xs font-bold text-slate-400">{myListings.length} إعلان</span>
@@ -1005,8 +1054,8 @@ function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpen
             ))}
           </div>
         ) : (
-          <div className="profile-empty-state">
-            <Package size={28} />
+          <div className="profile-empty-state profile-empty-state-compact">
+            <Package size={24} />
             <p>لا توجد إعلانات حتى الآن</p>
             <button type="button" onClick={onOpenStudio}>
               أضف إعلانك الأول

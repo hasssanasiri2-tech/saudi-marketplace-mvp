@@ -168,6 +168,11 @@ button {
   text-align: center;
 }
 
+.profile-empty-state-compact {
+  min-height: 132px;
+  padding: 18px;
+}
+
 .profile-empty-state svg {
   color: var(--app-muted);
 }
@@ -234,6 +239,118 @@ button {
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.profile-sell-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  border: 1px solid rgba(209, 213, 219, 0.14);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(209, 213, 219, 0.1), transparent 150px),
+    var(--app-card);
+  padding: 16px;
+}
+
+.profile-sell-cta h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.profile-sell-cta p {
+  margin: 5px 0 0;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-sell-cta button {
+  min-height: 42px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(209, 213, 219, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #3a414e, #2b313d);
+  padding: 0 14px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  transition: transform 160ms ease;
+}
+
+.profile-sell-cta button:active {
+  transform: scale(0.97);
+}
+
+.profile-section-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.profile-section-row {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--app-border);
+  border-radius: 20px;
+  background: var(--app-surface);
+  padding: 12px;
+  text-align: right;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.profile-section-row:active {
+  transform: scale(0.99);
+}
+
+.profile-section-row:hover {
+  border-color: rgba(209, 213, 219, 0.22);
+  background: #1b1f27;
+}
+
+.profile-section-content {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-section-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(209, 213, 219, 0.1);
+  border-radius: 15px;
+  color: var(--app-accent);
+  background: rgba(209, 213, 219, 0.06);
+}
+
+.profile-section-row h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.profile-section-row p {
+  margin: 4px 0 0;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.profile-section-chevron {
+  flex: 0 0 auto;
+  color: #6b7280;
 }
 
 @layer components {
