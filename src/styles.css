@@ -6,7 +6,14 @@
 
 :root {
   color-scheme: dark;
-  background: #020617;
+  background: #0f1115;
+  --app-bg: #0f1115;
+  --app-surface: #171a21;
+  --app-card: #1e222b;
+  --app-border: #2b313d;
+  --app-text: #ffffff;
+  --app-muted: #9ca3af;
+  --app-accent: #d1d5db;
 }
 
 * {
@@ -17,10 +24,10 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  color: #f8fafc;
+  color: var(--app-text);
   background:
-    radial-gradient(circle at top right, rgba(20, 184, 166, 0.18), transparent 320px),
-    #020617;
+    radial-gradient(circle at top right, rgba(209, 213, 219, 0.08), transparent 320px),
+    var(--app-bg);
 }
 
 button,
@@ -52,7 +59,7 @@ button {
   background:
     radial-gradient(circle at 50% -5%, rgba(148, 163, 184, 0.13), transparent 260px),
     radial-gradient(circle at 100% 10%, rgba(255, 255, 255, 0.05), transparent 190px),
-    #0b0f14;
+    var(--app-bg);
 }
 
 .profile-top-button {
@@ -63,21 +70,27 @@ button {
   border: 1px solid #232a34;
   border-radius: 16px;
   color: #ffffff;
-  background: #151a21;
+  background: var(--app-surface);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
 }
 
 @layer components {
   .input {
-    @apply w-full rounded-2xl border border-white/10 bg-slate-800 px-4 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-teal-400 focus:ring-4 focus:ring-teal-500/15;
+    @apply w-full rounded-2xl border px-4 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:ring-4 focus:ring-slate-400/15;
+    background: var(--app-card);
+    border-color: var(--app-border);
   }
 
   .auth-input {
-    @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-teal-400 focus:bg-white/10 focus:ring-4 focus:ring-teal-500/15;
+    @apply w-full rounded-2xl border px-4 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:ring-4 focus:ring-slate-400/15;
+    background: rgba(30, 34, 43, 0.82);
+    border-color: var(--app-border);
   }
 
   .select-compact {
-    @apply h-11 min-w-0 rounded-2xl border border-white/10 bg-slate-800 px-2 text-xs font-extrabold text-slate-100 outline-none focus:border-teal-400;
+    @apply h-11 min-w-0 rounded-2xl border px-2 text-xs font-extrabold text-slate-100 outline-none focus:border-slate-300;
+    background: var(--app-card);
+    border-color: var(--app-border);
   }
 
   .icon-button {
@@ -85,16 +98,232 @@ button {
   }
 
   .btn-primary {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-teal-700 px-5 py-3 text-sm font-extrabold text-white shadow-sm transition active:scale-[0.98];
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-extrabold text-white shadow-sm transition active:scale-[0.98];
+    background: linear-gradient(180deg, #3a414e, #2b313d);
+    border: 1px solid rgba(209, 213, 219, 0.12);
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-slate-800 px-4 py-3 text-sm font-extrabold text-slate-100 transition active:scale-[0.98];
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-extrabold text-slate-100 transition active:scale-[0.98];
+    background: var(--app-card);
+    border-color: var(--app-border);
   }
 
   .btn-danger {
     @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-extrabold text-white transition active:scale-[0.98];
   }
+}
+
+.auth-shell {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(209, 213, 219, 0.1), transparent 280px),
+    linear-gradient(180deg, #0f1115, #090a0d);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 430px;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 30px;
+  background: rgba(23, 26, 33, 0.96);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.48);
+}
+
+.auth-hero {
+  padding: 24px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(209, 213, 219, 0.12), transparent 170px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent);
+}
+
+.auth-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.auth-logo {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 1px solid rgba(209, 213, 219, 0.16);
+  border-radius: 20px;
+  color: #ffffff;
+  background: linear-gradient(145deg, #2b313d, #171a21);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.auth-kicker {
+  margin: 0;
+  color: var(--app-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.auth-hero h1 {
+  margin: 6px 0 0;
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.auth-hero > p {
+  margin: 18px 0 0;
+  color: var(--app-muted);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.9;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+  padding: 8px 24px 24px;
+}
+
+.auth-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-eye {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  transform: translateY(-50%);
+  place-items: center;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  color: var(--app-muted);
+  background: rgba(255, 255, 255, 0.04);
+  transition: color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.auth-eye:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.auth-link {
+  color: var(--app-accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.auth-message {
+  margin: 0;
+  border-radius: 18px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.7;
+}
+
+.auth-message-success {
+  border: 1px solid rgba(209, 213, 219, 0.18);
+  color: #f9fafb;
+  background: rgba(209, 213, 219, 0.08);
+}
+
+.auth-message-error {
+  border: 1px solid rgba(251, 113, 133, 0.22);
+  color: #fecdd3;
+  background: rgba(244, 63, 94, 0.08);
+}
+
+.auth-submit,
+.auth-muted-button {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 800;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.auth-submit {
+  border: 1px solid rgba(209, 213, 219, 0.16);
+  color: #ffffff;
+  background: linear-gradient(180deg, #3a414e, #2b313d);
+}
+
+.auth-muted-button {
+  border: 1px solid var(--app-border);
+  color: var(--app-accent);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.auth-submit:active,
+.auth-muted-button:active {
+  transform: scale(0.98);
+}
+
+.auth-submit:disabled,
+.auth-muted-button:disabled {
+  opacity: 0.62;
+}
+
+.auth-switch {
+  color: var(--app-muted);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.auth-switch p {
+  margin: 0;
+}
+
+.auth-switch button {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.bg-slate-950,
+.bg-slate-900 {
+  background-color: var(--app-bg) !important;
+}
+
+.bg-slate-800 {
+  background-color: var(--app-card) !important;
+}
+
+.bg-white\/10,
+.bg-white\/5 {
+  background-color: rgba(209, 213, 219, 0.07) !important;
+}
+
+.border-white\/10 {
+  border-color: var(--app-border) !important;
+}
+
+.text-slate-400,
+.text-slate-500 {
+  color: var(--app-muted) !important;
+}
+
+.text-slate-300,
+.text-slate-200,
+.text-slate-100 {
+  color: var(--app-accent) !important;
+}
+
+.shadow-soft,
+.shadow-sm {
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24) !important;
 }
 
 .shape-medallion {
@@ -165,8 +394,8 @@ button {
 }
 
 .nav-profile-mark-active {
-  background: rgba(15, 118, 110, 0.22);
-  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.28);
+  background: rgba(209, 213, 219, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(209, 213, 219, 0.28);
 }
 
 .nav-profile-image,
@@ -231,7 +460,7 @@ button {
 .shape-2 {
   background:
     repeating-conic-gradient(from 8deg, rgba(243, 226, 184, 0.92) 0 5deg, rgba(11, 92, 82, 0.95) 5deg 14deg),
-    radial-gradient(circle, #0f766e, #073c35);
+    radial-gradient(circle, #D1D5DB, #171A21);
 }
 
 .shape-2::before {
@@ -355,7 +584,7 @@ button {
 
 .shape-14 {
   background:
-    repeating-conic-gradient(from 18deg, #f3deb0 0 8deg, #0f766e 8deg 18deg, #0b3d39 18deg 27deg, #f7eccd 27deg 36deg);
+    repeating-conic-gradient(from 18deg, #f3deb0 0 8deg, #D1D5DB 8deg 18deg, #1E222B 18deg 27deg, #f7eccd 27deg 36deg);
 }
 
 .shape-14::before {

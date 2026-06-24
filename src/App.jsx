@@ -31,7 +31,7 @@ import {
   X
 } from 'lucide-react'
 
-const brandColor = '#0f766e'
+const brandColor = '#D1D5DB'
 
 const defaultUser = {
   id: 'guest',
@@ -51,7 +51,6 @@ const categoryOptions = [
   { id: 'furniture', name: 'أثاث', icon: Sofa },
   { id: 'fashion', name: 'ملابس', icon: Shirt }
 ]
-
 const decorativeShapes = [
   { id: 1, name: 'زخرفة هندسية' },
   { id: 2, name: 'نقش إسلامي' },
@@ -87,7 +86,7 @@ const seedListings = [
     id: 102,
     userId: 'guest',
     title: 'كامري 2021 فل كامل',
-    description: 'ممشى قليل، صيانة وكالة، السيارة جاهزة للاستخدام.',
+    description: 'ممشاها قليل، صيانة وكالة، السيارة جاهزة للاستخدام.',
     price: 83500,
     category: 'cars',
     city: 'جدة',
@@ -120,7 +119,6 @@ const seedListings = [
     createdAt: '2026-05-15'
   }
 ]
-
 function normalizeListing(listing) {
   return {
     ...listing,
@@ -300,7 +298,7 @@ export default function App() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950 px-5" dir="rtl">
         <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-soft">
-          <p className="text-sm font-extrabold text-teal-300">جاري تحميل الحساب...</p>
+          <p className="text-sm font-extrabold text-slate-300">جاري تحميل الحساب...</p>
         </div>
       </div>
     )
@@ -367,6 +365,28 @@ export default function App() {
   )
 }
 
+function mapAuthError(error) {
+  const message = error?.message?.toLowerCase() || ''
+
+  if (message.includes('invalid login') || message.includes('invalid credentials')) {
+    return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'
+  }
+
+  if (message.includes('email not confirmed')) {
+    return 'يرجى تأكيد بريدك الإلكتروني أولاً.'
+  }
+
+  if (message.includes('already registered') || message.includes('user already registered')) {
+    return 'هذا البريد مسجل مسبقاً. جرّب تسجيل الدخول.'
+  }
+
+  if (message.includes('password')) {
+    return 'تأكد أن كلمة المرور تحتوي على 6 أحرف على الأقل.'
+  }
+
+  return 'تعذر إتمام العملية. حاول مرة أخرى.'
+}
+
 function AuthPage({ onAuthReady }) {
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({
@@ -385,12 +405,12 @@ function AuthPage({ onAuthReady }) {
   const isLogin = mode === 'login'
   const isSignup = mode === 'signup'
   const isForgot = mode === 'forgot'
-  const title = isSignup ? 'إنشاء حساب' : isForgot ? 'استعادة كلمة المرور' : 'تسجيل الدخول'
+  const title = isSignup ? 'إنشاء حساب' : isForgot ? 'نسيت كلمة المرور؟' : 'تسجيل الدخول'
   const subtitle = isSignup
-    ? 'أكمل بياناتك للبدء في البيع والشراء.'
+    ? 'أنشئ حسابك وابدأ البيع والشراء بثقة.'
     : isForgot
-      ? 'أدخل بريدك الإلكتروني وسنرسل رابط إعادة التعيين.'
-      : 'مرحبًا بك في سريع.'
+      ? 'أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.'
+      : 'مرحباً بك في سريع. ادخل إلى حسابك لإدارة عروضك ورسائلك.'
 
   function updateForm(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -400,6 +420,7 @@ function AuthPage({ onAuthReady }) {
     setMode(nextMode)
     setMessage('')
     setErrorMessage('')
+    setShowPassword(false)
   }
 
   async function handleSubmit(event) {
@@ -440,11 +461,11 @@ function AuthPage({ onAuthReady }) {
             phone: form.phone,
             city: form.city
           })
-          if (profileError) throw profileError
+          if (profileError && profileError.code !== '23505') throw profileError
         }
 
         if (data.session) await onAuthReady(data.session)
-        else setMessage('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتفعيل الحساب.')
+        else setMessage('تم إنشاء الحساب بنجاح. تحقق من بريدك الإلكتروني لتفعيل الحساب.')
         return
       }
 
@@ -453,16 +474,10 @@ function AuthPage({ onAuthReady }) {
         password: form.password
       })
 
-      if (error) {
-        if (error.message?.toLowerCase().includes('email not confirmed')) {
-          throw new Error('يرجى تأكيد بريدك الإلكتروني أولاً.')
-        }
-        throw error
-      }
-
+      if (error) throw error
       await onAuthReady(data.session)
     } catch (error) {
-      setErrorMessage(error.message || 'تعذر إتمام العملية. حاول مرة أخرى.')
+      setErrorMessage(mapAuthError(error))
     } finally {
       setIsSubmitting(false)
     }
@@ -484,35 +499,35 @@ function AuthPage({ onAuthReady }) {
       if (error) throw error
       setMessage('تم إرسال رابط التفعيل مرة أخرى. تحقق من بريدك الإلكتروني.')
     } catch (error) {
-      setErrorMessage(error.message || 'تعذر إعادة إرسال رابط التفعيل.')
+      setErrorMessage(mapAuthError(error))
     } finally {
       setIsResendingConfirmation(false)
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-5 py-8" dir="rtl">
-      <section className="w-full max-w-md overflow-hidden rounded-[30px] border border-white/10 bg-slate-900 shadow-[0_26px_80px_rgba(2,6,23,0.6)]">
-        <div className="bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.28),transparent_40%),linear-gradient(180deg,rgba(15,118,110,0.18),rgba(15,23,42,0))] p-6">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-extrabold text-teal-300">سريع</p>
-              <h1 className="mt-2 text-3xl font-extrabold leading-tight text-white">{title}</h1>
+    <div className="auth-shell" dir="rtl">
+      <section className="auth-card">
+        <div className="auth-hero">
+          <div className="auth-logo-wrap">
+            <div className="auth-logo">
+              <Package size={30} />
             </div>
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-teal-600 text-white">
-              <Package size={28} />
+            <div>
+              <p className="auth-kicker">سريع</p>
+              <h1>{title}</h1>
             </div>
           </div>
-          <p className="text-sm leading-7 text-slate-300">{subtitle}</p>
+          <p>{subtitle}</p>
         </div>
 
-        <form className="space-y-4 p-6 pt-2" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           {isSignup && (
-            <>
+            <div className="auth-grid">
               <AuthField label="الاسم">
-                <input required className="auth-input" value={form.name} autoComplete="name" onChange={(event) => updateForm('name', event.target.value)} placeholder="اسمك" />
+                <input required className="auth-input" value={form.name} autoComplete="name" onChange={(event) => updateForm('name', event.target.value)} placeholder="اسمك الكامل" />
               </AuthField>
-              <AuthField label="رقم الجوال">
+              <AuthField label="الجوال">
                 <input required className="auth-input" value={form.phone} inputMode="tel" autoComplete="tel" onChange={(event) => updateForm('phone', event.target.value)} placeholder="05xxxxxxxx" />
               </AuthField>
               <AuthField label="المدينة">
@@ -522,7 +537,7 @@ function AuthPage({ onAuthReady }) {
                   ))}
                 </select>
               </AuthField>
-            </>
+            </div>
           )}
 
           <AuthField label="البريد الإلكتروني">
@@ -540,48 +555,49 @@ function AuthPage({ onAuthReady }) {
                   minLength={6}
                   value={form.password}
                   onChange={(event) => updateForm('password', event.target.value)}
-                  placeholder="كلمة المرور"
+                  placeholder="••••••••"
                 />
-                <button
-                  className="absolute left-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300"
-                  type="button"
-                  aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                  onClick={() => setShowPassword((value) => !value)}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                <button className="auth-eye" type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}>
+                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
                 </button>
               </div>
             </AuthField>
           )}
 
           {isLogin && (
-            <button className="text-sm font-extrabold text-teal-300" type="button" onClick={() => switchMode('forgot')}>
+            <button className="auth-link self-start" type="button" onClick={() => switchMode('forgot')}>
               نسيت كلمة المرور؟
             </button>
           )}
 
-          {message && <p className="rounded-2xl border border-teal-400/20 bg-teal-400/10 p-3 text-sm font-bold text-teal-100">{message}</p>}
-          {errorMessage && <p className="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm font-bold text-rose-100">{errorMessage}</p>}
+          {message && <p className="auth-message auth-message-success">{message}</p>}
+          {errorMessage && <p className="auth-message auth-message-error">{errorMessage}</p>}
 
-          <button className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-teal-600 px-5 py-3 text-sm font-extrabold text-white transition active:scale-[0.98] disabled:opacity-70" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'جاري الإرسال...' : isSignup ? 'إنشاء حساب' : isForgot ? 'إرسال رابط الاستعادة' : 'تسجيل الدخول'}
+          <button className="auth-submit" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'جاري المعالجة...' : isSignup ? 'إنشاء حساب' : isForgot ? 'إرسال رابط الاستعادة' : 'تسجيل الدخول'}
           </button>
 
-          <div className="grid gap-2">
-            {!isSignup && (
-              <button className="btn-secondary border-white/10 bg-white/5 text-slate-100" type="button" onClick={() => switchMode('signup')}>
-                إنشاء حساب جديد
-              </button>
+          {(isLogin || isSignup) && (
+            <button className="auth-muted-button" type="button" disabled={isResendingConfirmation} onClick={handleResendConfirmation}>
+              {isResendingConfirmation ? 'جاري إعادة الإرسال...' : 'إعادة إرسال رابط التفعيل'}
+            </button>
+          )}
+
+          <div className="auth-switch">
+            {isLogin && (
+              <p>
+                ليس لديك حساب؟ <button type="button" onClick={() => switchMode('signup')}>إنشاء حساب</button>
+              </p>
             )}
-            {(isLogin || isSignup) && (
-              <button className="btn-secondary border-white/10 bg-white/5 text-slate-100 disabled:opacity-70" type="button" disabled={isResendingConfirmation} onClick={handleResendConfirmation}>
-                {isResendingConfirmation ? 'جاري إعادة الإرسال...' : 'إعادة إرسال رابط التفعيل'}
-              </button>
+            {isSignup && (
+              <p>
+                لديك حساب؟ <button type="button" onClick={() => switchMode('login')}>تسجيل الدخول</button>
+              </p>
             )}
-            {!isLogin && (
-              <button className="btn-secondary border-white/10 bg-white/5 text-slate-100" type="button" onClick={() => switchMode('login')}>
-                العودة إلى تسجيل الدخول
-              </button>
+            {isForgot && (
+              <p>
+                تذكرت كلمة المرور؟ <button type="button" onClick={() => switchMode('login')}>العودة لتسجيل الدخول</button>
+              </p>
             )}
           </div>
         </form>
@@ -606,7 +622,7 @@ function HomePage({ filters, setFilters, listings, savedIds, onOpenListing, onTo
     <div className="space-y-5 pt-5">
       <header className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-extrabold text-teal-300">أهلًا {user.name}</p>
+          <p className="text-sm font-extrabold text-slate-300">أهلًا {user.name}</p>
           <h1 className="mt-1 text-2xl font-extrabold text-white">ماذا تبحث عنه؟</h1>
         </div>
         <button className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-slate-800 text-slate-100 shadow-sm" type="button" onClick={() => setActivePage('profile')} aria-label="الحساب">
@@ -615,7 +631,7 @@ function HomePage({ filters, setFilters, listings, savedIds, onOpenListing, onTo
       </header>
 
       <section className="flex items-center gap-3 rounded-3xl border border-white/10 bg-slate-800 px-4 py-2 shadow-sm">
-        <Search size={21} className="text-teal-300" />
+        <Search size={21} className="text-slate-300" />
         <input
           className="w-full bg-transparent py-3 text-sm font-bold text-slate-100 outline-none placeholder:text-slate-500"
           placeholder="ابحث عن سيارة، جوال، أثاث..."
@@ -632,7 +648,7 @@ function HomePage({ filters, setFilters, listings, savedIds, onOpenListing, onTo
             <button
               key={category.id}
               className={`grid min-h-[76px] place-items-center gap-1 rounded-2xl border text-xs font-extrabold transition ${
-                active ? 'border-teal-500 bg-teal-600 text-white' : 'border-white/10 bg-slate-800 text-slate-200'
+                active ? 'border-[#D1D5DB] bg-[#2B313D] text-white' : 'border-white/10 bg-slate-800 text-slate-200'
               }`}
               type="button"
               onClick={() => setFilters((current) => ({ ...current, category: active ? 'all' : category.id }))}
@@ -681,10 +697,10 @@ function ListingCard({ listing, isSaved, onOpen, onToggleSaved }) {
             <h3 className="line-clamp-2 min-h-10 text-sm font-extrabold leading-5 text-white">{listing.title}</h3>
           </button>
           <button className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-slate-200" type="button" onClick={onToggleSaved} aria-label="حفظ الإعلان">
-            {isSaved ? <BookmarkCheck size={18} className="text-teal-300" /> : <Bookmark size={18} />}
+            {isSaved ? <BookmarkCheck size={18} className="text-slate-300" /> : <Bookmark size={18} />}
           </button>
         </div>
-        <p className="text-base font-extrabold text-teal-300">{formatPrice(listing.price)}</p>
+        <p className="text-base font-extrabold text-slate-300">{formatPrice(listing.price)}</p>
         <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-slate-400">
           <span>{listing.city}</span>
           <span>{categoryName(listing.category)}</span>
@@ -765,12 +781,12 @@ function AddListingPage({ onPublish, userCity }) {
     >
       <PageTitle title="إضافة إعلان" subtitle="صورة واضحة وتفاصيل مختصرة تكفي." />
 
-      <label className="flex aspect-[16/10] cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-teal-500/40 bg-slate-800 text-center">
+      <label className="flex aspect-[16/10] cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#D1D5DB]/40 bg-slate-800 text-center">
         {preview ? (
           <img src={preview} alt="معاينة الإعلان" className="h-full w-full rounded-3xl object-cover" />
         ) : (
           <>
-            <Camera size={34} className="text-teal-300" />
+            <Camera size={34} className="text-slate-300" />
             <span className="mt-3 text-sm font-extrabold text-white">أضف صورة الإعلان</span>
             <span className="mt-1 text-xs font-bold text-slate-400">اختر صورة من المعرض أو الكاميرا</span>
           </>
@@ -778,7 +794,7 @@ function AddListingPage({ onPublish, userCity }) {
         <input type="file" accept="image/*" className="hidden" disabled={isUploading || isPublishing} onChange={handleImageChange} />
       </label>
 
-      {isUploading && <p className="text-sm font-bold text-teal-300">جاري رفع الصورة...</p>}
+      {isUploading && <p className="text-sm font-bold text-slate-300">جاري رفع الصورة...</p>}
       {errorMessage && <p className="text-sm font-bold text-rose-300">{errorMessage}</p>}
 
       <Field label="عنوان الإعلان">
@@ -857,7 +873,7 @@ function ExplorePage({ listings, savedIds, onOpenListing, onToggleSaved }) {
                       </span>
                     </div>
                     <h2 className="text-2xl font-extrabold leading-tight text-white">{listing.title}</h2>
-                    <p className="mt-2 text-3xl font-extrabold text-teal-300">{formatPrice(listing.price)}</p>
+                    <p className="mt-2 text-3xl font-extrabold text-slate-300">{formatPrice(listing.price)}</p>
                     <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-200">{listing.description}</p>
                   </div>
                 </button>
@@ -869,7 +885,7 @@ function ExplorePage({ listings, savedIds, onOpenListing, onToggleSaved }) {
                     aria-label="حفظ العرض"
                     onClick={() => onToggleSaved(listing.id)}
                   >
-                    {saved ? <BookmarkCheck size={22} className="text-teal-300" /> : <Bookmark size={22} />}
+                    {saved ? <BookmarkCheck size={22} className="text-slate-300" /> : <Bookmark size={22} />}
                   </button>
                   <button
                     className="grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-black/35 text-white backdrop-blur transition active:scale-95"
@@ -901,10 +917,10 @@ function DetailsPage({ listing, isSaved, onBack, onToggleSaved }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl font-extrabold leading-tight text-white">{listing.title}</h1>
-              <p className="mt-2 text-xl font-extrabold text-teal-300">{formatPrice(listing.price)}</p>
+              <p className="mt-2 text-xl font-extrabold text-slate-300">{formatPrice(listing.price)}</p>
             </div>
             <button className="icon-button" type="button" onClick={onToggleSaved} aria-label="حفظ الإعلان">
-              {isSaved ? <BookmarkCheck size={21} className="text-teal-700" /> : <Bookmark size={21} />}
+              {isSaved ? <BookmarkCheck size={21} className="text-slate-300" /> : <Bookmark size={21} />}
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1071,7 +1087,7 @@ function CompactListingList({ listings, onOpenListing }) {
           <img src={listing.image_url || listing.imageUrl} alt={listing.title} className="h-16 w-16 rounded-xl object-cover" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-extrabold text-white">{listing.title}</p>
-            <p className="mt-1 text-xs font-bold text-teal-300">{formatPrice(listing.price)}</p>
+            <p className="mt-1 text-xs font-bold text-slate-300">{formatPrice(listing.price)}</p>
           </div>
           <ChevronLeft size={17} className="text-slate-500" />
         </button>
@@ -1096,7 +1112,7 @@ function BottomNav({ activePage, setActivePage, homeShapeId }) {
           const Icon = item.icon
           const active = activePage === item.id
           return (
-            <button key={item.id} className={`flex h-[58px] flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-extrabold transition ${active ? 'bg-teal-500/15 text-teal-300' : 'text-slate-400'}`} type="button" onClick={() => setActivePage(item.id)}>
+            <button key={item.id} className={`flex h-[58px] flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-extrabold transition ${active ? 'bg-white/10 text-slate-300' : 'text-slate-400'}`} type="button" onClick={() => setActivePage(item.id)}>
               {item.id === 'home' ? (
                 <span className={`nav-home-mark ${active ? 'nav-home-mark-active' : ''}`}>
                   <img className="shape-medallion nav-home-image" src={shapeImageSrc(homeShapeId)} alt="" />
@@ -1129,7 +1145,7 @@ function ShapeGallery({ shapes, selectedShapeId, onSelectShape }) {
           <button
             key={shape.id}
             className={`rounded-3xl border p-2 text-center transition active:scale-[0.98] ${
-              selectedShapeId === shape.id ? 'border-teal-300 bg-teal-500/10' : 'border-transparent'
+              selectedShapeId === shape.id ? 'border-[#D1D5DB] bg-white/10' : 'border-transparent'
             }`}
             type="button"
             onClick={() => onSelectShape(shape.id)}
@@ -1212,7 +1228,7 @@ function SupabaseConfigError({ message }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-5" dir="rtl">
       <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-slate-900 p-6 text-center shadow-soft">
-        <ShieldCheck size={32} className="mx-auto text-teal-300" />
+        <ShieldCheck size={32} className="mx-auto text-slate-300" />
         <h1 className="mt-4 text-lg font-extrabold text-white">تعذر الاتصال</h1>
         <p className="mt-2 text-sm font-bold leading-6 text-slate-300">{message}</p>
       </div>
