@@ -1,13 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 
-const expectedSupabaseUrl = 'https://fealpdyveipbxvyekpzz.supabase.co'
-const forbiddenSupabasePath = ['rest', 'v1'].join('/')
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 const hasSupabaseUrl = Boolean(supabaseUrl)
 const hasSupabaseAnonKey = Boolean(supabaseAnonKey)
-const hasRestPath = Boolean(supabaseUrl?.includes(forbiddenSupabasePath))
-const hasValidSupabaseUrl = supabaseUrl === expectedSupabaseUrl && !hasRestPath
+const hasValidSupabaseUrl = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(supabaseUrl || '')
 const secretKeyPrefix = ['sb', 'secret'].join('_') + '_'
 const hasValidAnonKey = Boolean(
   supabaseAnonKey &&
@@ -45,6 +42,6 @@ if (import.meta.env.DEV) {
 }
 
 export const supabase = createClient(
-  supabaseUrl || expectedSupabaseUrl,
+  supabaseUrl || globalThis.location?.origin || 'http://localhost',
   supabaseAnonKey || 'placeholder-anon-key'
 )
