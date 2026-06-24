@@ -169,15 +169,32 @@ button {
   box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.28);
 }
 
-.nav-profile-image {
+.nav-profile-image,
+.nav-profile-sprite {
   width: 28px;
   height: 28px;
+}
+
+.nav-profile-image {
   object-fit: contain;
+  pointer-events: none;
+}
+
+.nav-profile-sprite {
+  --profile-frame-size: 28px;
+  display: block;
+  background-repeat: no-repeat;
+  background-size: 100% calc(var(--profile-frame-size) * 56);
+  background-position: 0 0;
   pointer-events: none;
 }
 
 .nav-profile-image-active {
   animation: profile-nav-pop 520ms ease both;
+}
+
+.nav-profile-sprite-active {
+  animation: profile-nav-sprite 2.8s steps(56) infinite;
 }
 
 @keyframes profile-nav-pop {
@@ -191,6 +208,12 @@ button {
 
   100% {
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes profile-nav-sprite {
+  to {
+    background-position: 0 calc(var(--profile-frame-size) * -56);
   }
 }
 
