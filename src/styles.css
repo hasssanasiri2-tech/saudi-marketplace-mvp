@@ -56,6 +56,7 @@ button {
 
 .profile-screen {
   min-height: calc(100vh - 92px);
+  padding-bottom: calc(118px + env(safe-area-inset-bottom)) !important;
   background:
     radial-gradient(circle at 50% -5%, rgba(148, 163, 184, 0.13), transparent 260px),
     radial-gradient(circle at 100% 10%, rgba(255, 255, 255, 0.05), transparent 190px),
@@ -79,16 +80,16 @@ button {
   align-items: center;
   gap: 14px;
   border: 1px solid var(--app-border);
-  border-radius: 24px;
+  border-radius: 22px;
   background: var(--app-surface);
-  padding: 16px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+  padding: 14px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
 }
 
 .profile-simple-avatar {
   display: grid;
-  width: 74px;
-  height: 74px;
+  width: 68px;
+  height: 68px;
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
@@ -108,7 +109,7 @@ button {
   margin: 0;
   overflow: hidden;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -127,8 +128,8 @@ button {
 .profile-action-button,
 .profile-logout-button,
 .profile-empty-state button {
-  min-height: 48px;
-  border-radius: 18px;
+  min-height: 46px;
+  border-radius: 16px;
   font-size: 13px;
   font-weight: 800;
   transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
@@ -159,7 +160,7 @@ button {
 
 .profile-empty-state {
   display: grid;
-  min-height: 190px;
+  min-height: 160px;
   place-items: center;
   border: 1px dashed var(--app-border);
   border-radius: 24px;
@@ -169,8 +170,8 @@ button {
 }
 
 .profile-empty-state-compact {
-  min-height: 132px;
-  padding: 18px;
+  min-height: 118px;
+  padding: 16px;
 }
 
 .profile-empty-state svg {
@@ -194,7 +195,7 @@ button {
 .profile-listing-card {
   overflow: hidden;
   border: 1px solid var(--app-border);
-  border-radius: 20px;
+  border-radius: 18px;
   background: var(--app-card);
   text-align: right;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
@@ -211,7 +212,7 @@ button {
 }
 
 .profile-listing-card div {
-  padding: 10px;
+  padding: 11px;
 }
 
 .profile-listing-price {
@@ -231,6 +232,19 @@ button {
   white-space: nowrap;
 }
 
+.profile-my-listings {
+  margin-top: 20px;
+  scroll-margin-top: 18px;
+}
+
+.profile-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .profile-listing-city {
   margin: 6px 0 0;
   overflow: hidden;
@@ -246,13 +260,13 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin-top: 18px;
+  margin-top: 16px;
   border: 1px solid rgba(209, 213, 219, 0.14);
-  border-radius: 22px;
+  border-radius: 20px;
   background:
     radial-gradient(circle at 0% 0%, rgba(209, 213, 219, 0.1), transparent 150px),
     var(--app-card);
-  padding: 16px;
+  padding: 15px;
 }
 
 .profile-sell-cta h2 {
@@ -288,19 +302,19 @@ button {
 
 .profile-section-list {
   display: grid;
-  gap: 10px;
-  margin-top: 18px;
+  gap: 9px;
+  margin-top: 16px;
 }
 
 .profile-section-row {
   display: flex;
-  min-height: 72px;
+  min-height: 68px;
   align-items: center;
   justify-content: space-between;
   border: 1px solid var(--app-border);
-  border-radius: 20px;
+  border-radius: 18px;
   background: var(--app-surface);
-  padding: 12px;
+  padding: 11px 12px;
   text-align: right;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
@@ -323,12 +337,12 @@ button {
 
 .profile-section-icon {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   place-items: center;
   border: 1px solid rgba(209, 213, 219, 0.1);
-  border-radius: 15px;
+  border-radius: 14px;
   color: var(--app-accent);
   background: rgba(209, 213, 219, 0.06);
 }

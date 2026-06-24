@@ -353,6 +353,7 @@ export default function App() {
               onOpenListing={openListing}
               onSelectHomeShape={setHomeShapeId}
               onOpenStudio={() => setActivePage('add')}
+              onNavigate={setActivePage}
             />
           )}
         </main>
@@ -957,24 +958,27 @@ function SavedPage({ listings, onOpenListing }) {
   )
 }
 
-function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpenStudio }) {
+function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpenStudio, onNavigate }) {
   const myListings = listings.filter((listing) => listing.userId === user.id)
   const savedCount = savedIds.length
   const accountSections = [
     {
       icon: Package,
       title: 'إعلاناتي',
-      subtitle: myListings.length ? myListings.length + ' إعلان منشور' : 'إدارة الإعلانات التي تنشرها'
+      subtitle: myListings.length ? myListings.length + ' إعلان منشور' : 'إدارة الإعلانات التي تنشرها',
+      onClick: () => document.getElementById('profile-listings')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     },
     {
       icon: Bookmark,
       title: 'المحفوظات',
-      subtitle: savedCount ? savedCount + ' إعلان محفوظ' : 'العروض التي حفظتها للرجوع إليها'
+      subtitle: savedCount ? savedCount + ' إعلان محفوظ' : 'العروض التي حفظتها للرجوع إليها',
+      onClick: () => onNavigate('saved')
     },
     {
       icon: MessageCircle,
       title: 'الرسائل',
-      subtitle: 'محادثات البيع والشراء'
+      subtitle: 'محادثات البيع والشراء',
+      onClick: () => onNavigate('chat')
     },
     {
       icon: Settings,
@@ -1027,7 +1031,7 @@ function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpen
         {accountSections.map((section) => {
           const Icon = section.icon
           return (
-            <button key={section.title} className="profile-section-row" type="button">
+            <button key={section.title} className="profile-section-row" type="button" onClick={section.onClick}>
               <ChevronLeft size={17} className="profile-section-chevron" />
               <div className="profile-section-content">
                 <span className="profile-section-icon"><Icon size={19} /></span>
@@ -1041,8 +1045,8 @@ function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpen
         })}
       </section>
 
-      <section className="mt-5">
-        <div className="mb-3 flex items-center justify-between">
+      <section id="profile-listings" className="profile-my-listings">
+        <div className="profile-section-heading">
           <h2 className="text-base font-extrabold text-white">إعلاناتي</h2>
           <span className="text-xs font-bold text-slate-400">{myListings.length} إعلان</span>
         </div>
