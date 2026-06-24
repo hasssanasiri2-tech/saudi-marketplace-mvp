@@ -25,7 +25,6 @@ import {
   ShieldCheck,
   Shirt,
   Sofa,
-  Star,
   Tag,
   Wallet,
   X
@@ -37,9 +36,7 @@ const defaultUser = {
   id: 'guest',
   name: 'مستخدم سريع',
   phone: '0500000000',
-  city: 'الرياض',
-  rating: 4.8,
-  verified: true
+  city: 'الرياض'
 }
 
 const cities = ['الرياض', 'جدة', 'مكة المكرمة', 'المدينة المنورة', 'الدمام', 'الخبر', 'أبها', 'تبوك']
@@ -962,116 +959,73 @@ function SavedPage({ listings, onOpenListing }) {
 
 function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpenStudio }) {
   const myListings = listings.filter((listing) => listing.userId === user.id)
-  const saved = listings.filter((listing) => savedIds.includes(listing.id))
 
   return (
     <div className="profile-screen -mx-4 min-h-screen px-4 pb-4 pt-5 text-white">
-      <header className="mb-5 flex items-center justify-between">
-        <button className="profile-top-button" type="button" aria-label="الإعدادات">
-          <Settings size={22} />
-        </button>
+      <header className="mb-5">
         <h1 className="text-lg font-extrabold text-white">حسابي</h1>
-        <button className="profile-top-button" type="button" aria-label="المحفظة">
-          <Wallet size={22} />
-        </button>
       </header>
 
-      <section className="rounded-[30px] border border-[#232A34] bg-[linear-gradient(145deg,#151A21,#0B0F14)] p-5 text-center shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
-        <div className="mx-auto grid h-28 w-28 place-items-center rounded-full bg-[#060A0F] p-2 text-white">
-          <div className="h-full w-full overflow-hidden rounded-full bg-[#060A0F]">
-            <img className="h-full w-full object-contain p-1" src={profileStillSrc} alt="أيقونة الحساب" />
-          </div>
+      <section className="profile-simple-card">
+        <div className="profile-simple-avatar">
+          <img src={profileStillSrc} alt="صورة الحساب" />
         </div>
 
-        <h2 className="mt-4 text-2xl font-extrabold">{user.name}</h2>
-        <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-extrabold text-slate-100">
-          <ShieldCheck size={15} />
-          بائع موثوق
-        </div>
-        <div className="mt-3 flex items-center justify-center gap-1 text-amber-300">
-          {[1, 2, 3, 4, 5].map((item) => (
-            <Star key={item} size={14} fill="currentColor" />
-          ))}
-          <span className="mr-1 text-xs font-bold text-slate-300">4.8 · 36 مراجعة</span>
-        </div>
-        <p className="mt-2 text-sm font-bold text-slate-400">{user.city} · عضو منذ يناير 2022</p>
-
-        <div className="mt-6 grid grid-cols-3 gap-2">
-          <Metric label="إعلاناتي" value={myListings.length} />
-          <Metric label="المفضلة" value={saved.length} />
-          <Metric label="المتابعون" value={47} />
+        <div className="min-w-0 flex-1">
+          <h2>{user.name}</h2>
+          {user.city && (
+            <p>
+              <MapPin size={15} />
+              {user.city}
+            </p>
+          )}
         </div>
       </section>
 
-      <ProfileSection title="إعلاناتي" action="عرض الكل">
-        <div className="grid min-h-44 place-items-center rounded-3xl border border-dashed border-[#232A34] bg-[#151A21]/60 p-5 text-center">
-          <div>
-            <Camera size={34} className="mx-auto text-slate-300" />
-            <p className="mt-3 text-sm font-extrabold text-white">بإمكانك إضافة إعلان من الاستديو</p>
-            <p className="mt-1 text-xs font-bold text-slate-400">اختر صورة من جهازك وابدأ إعلانك بسرعة.</p>
-            <button className="mt-4 rounded-2xl bg-slate-100 px-5 py-3 text-sm font-extrabold text-slate-950 transition active:scale-[0.98]" type="button" onClick={onOpenStudio}>
-              فتح الاستديو
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <button className="profile-action-button" type="button">
+          تعديل الملف الشخصي
+        </button>
+        <button className="profile-logout-button" type="button" onClick={onLogout}>
+          <LogOut size={18} />
+          تسجيل الخروج
+        </button>
+      </div>
+
+      <section className="mt-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-base font-extrabold text-white">إعلاناتي</h2>
+          <span className="text-xs font-bold text-slate-400">{myListings.length} إعلان</span>
+        </div>
+
+        {myListings.length ? (
+          <div className="grid grid-cols-2 gap-3">
+            {myListings.map((listing) => (
+              <ProfileListingCard key={listing.id} listing={listing} onOpenListing={onOpenListing} />
+            ))}
+          </div>
+        ) : (
+          <div className="profile-empty-state">
+            <Package size={28} />
+            <p>لا توجد إعلانات حتى الآن</p>
+            <button type="button" onClick={onOpenStudio}>
+              أضف إعلانك الأول
             </button>
           </div>
-        </div>
-      </ProfileSection>
-
-      <section className="mt-5 space-y-2">
-        <ProfileMenuItem icon={Heart} label="المفضلة" value={saved.length} onClick={() => {}} />
-        <ProfileMenuItem icon={MessageCircle} label="الرسائل" />
-        <ProfileMenuItem icon={MapPin} label="العنوان" value={user.city} />
-        <ProfileMenuItem icon={Settings} label="الإعدادات" />
+        )}
       </section>
-
-      <button className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-extrabold text-white transition active:scale-[0.98]" type="button" onClick={onLogout}>
-        <LogOut size={19} />
-        تسجيل الخروج
-      </button>
     </div>
   )
 }
 
 function ProfileListingCard({ listing, onOpenListing }) {
-  const status = listing.status || 'متاح'
-  const statusClass =
-    status === 'مباع'
-      ? 'bg-rose-500/12 text-rose-300 border-rose-400/20'
-      : status === 'محجوز'
-        ? 'bg-amber-400/12 text-amber-200 border-amber-300/20'
-        : 'bg-slate-200/10 text-slate-200 border-white/15'
-
   return (
-    <button className="overflow-hidden rounded-3xl border border-[#232A34] bg-[#151A21] text-right shadow-[0_16px_35px_rgba(0,0,0,0.26)] transition hover:border-white/20 active:scale-[0.98]" type="button" onClick={() => onOpenListing(listing.id)}>
-      <div className="relative">
-        <img src={listing.image_url || listing.imageUrl} alt={listing.title} className="h-32 w-full object-cover" />
-        <span className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-black/45 text-white backdrop-blur">
-          <Heart size={15} />
-        </span>
-        <span className={`absolute bottom-2 left-2 rounded-full border px-2 py-1 text-[10px] font-extrabold backdrop-blur ${statusClass}`}>
-          {status}
-        </span>
-      </div>
-      <div className="p-3">
-        <p className="text-base font-extrabold text-slate-100">{formatPrice(listing.price)}</p>
-        <p className="mt-1 truncate text-sm font-extrabold text-white">{listing.title}</p>
-        <p className="mt-2 truncate text-xs font-bold text-slate-400">{listing.city}</p>
-      </div>
-    </button>
-  )
-}
-
-function ProfileMenuItem({ icon: Icon, label, value, onClick }) {
-  return (
-    <button className="flex min-h-14 w-full items-center justify-between rounded-2xl border border-[#232A34] bg-[#151A21] px-4 text-right transition hover:border-white/20 hover:bg-[#18202A] active:scale-[0.99]" type="button" onClick={onClick}>
-      <ChevronLeft size={18} className="text-slate-500" />
-      <div className="flex items-center gap-3">
-        <div>
-          <p className="text-sm font-extrabold text-white">{label}</p>
-          {value !== undefined && <p className="mt-0.5 text-xs font-bold text-slate-400">{value}</p>}
-        </div>
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-slate-100">
-          <Icon size={20} />
-        </span>
+    <button className="profile-listing-card" type="button" onClick={() => onOpenListing(listing.id)}>
+      <img src={listing.image_url || listing.imageUrl} alt={listing.title} />
+      <div>
+        <p className="profile-listing-price">{formatPrice(listing.price)}</p>
+        <h3>{listing.title}</h3>
+        {listing.city && <p className="profile-listing-city">{listing.city}</p>}
       </div>
     </button>
   )
@@ -1192,27 +1146,6 @@ function Field({ label, children }) {
 
 function Pill({ children }) {
   return <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-extrabold text-slate-200">{children}</span>
-}
-
-function Metric({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-[#232A34] bg-[#151A21] px-2 py-3 text-center">
-      <p className="text-lg font-extrabold text-white">{value}</p>
-      <p className="mt-1 text-xs font-bold text-slate-400">{label}</p>
-    </div>
-  )
-}
-
-function ProfileSection({ title, action, children }) {
-  return (
-    <section className="mt-5">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-extrabold text-white">{title}</h2>
-        {action && <button className="text-xs font-extrabold text-slate-300" type="button">{action}</button>}
-      </div>
-      {children}
-    </section>
-  )
 }
 
 function EmptyState({ text }) {

@@ -74,6 +74,168 @@ button {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
 }
 
+.profile-simple-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 24px;
+  background: var(--app-surface);
+  padding: 16px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+.profile-simple-avatar {
+  display: grid;
+  width: 74px;
+  height: 74px;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 50%;
+  background: #0b0d11;
+}
+
+.profile-simple-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 5px;
+}
+
+.profile-simple-card h2 {
+  margin: 0;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-simple-card p {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 6px 0 0;
+  color: var(--app-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-action-button,
+.profile-logout-button,
+.profile-empty-state button {
+  min-height: 48px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.profile-action-button {
+  border: 1px solid var(--app-border);
+  color: #ffffff;
+  background: var(--app-card);
+}
+
+.profile-logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(251, 113, 133, 0.2);
+  color: #fecdd3;
+  background: rgba(244, 63, 94, 0.08);
+}
+
+.profile-action-button:active,
+.profile-logout-button:active,
+.profile-empty-state button:active,
+.profile-listing-card:active {
+  transform: scale(0.98);
+}
+
+.profile-empty-state {
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+  border: 1px dashed var(--app-border);
+  border-radius: 24px;
+  background: rgba(30, 34, 43, 0.62);
+  padding: 24px;
+  text-align: center;
+}
+
+.profile-empty-state svg {
+  color: var(--app-muted);
+}
+
+.profile-empty-state p {
+  margin: 10px 0 16px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.profile-empty-state button {
+  border: 1px solid rgba(209, 213, 219, 0.18);
+  color: #ffffff;
+  background: linear-gradient(180deg, #3a414e, #2b313d);
+  padding: 0 16px;
+}
+
+.profile-listing-card {
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 20px;
+  background: var(--app-card);
+  text-align: right;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.profile-listing-card:hover {
+  border-color: rgba(209, 213, 219, 0.24);
+}
+
+.profile-listing-card img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.profile-listing-card div {
+  padding: 10px;
+}
+
+.profile-listing-price {
+  margin: 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.profile-listing-card h3 {
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-listing-city {
+  margin: 6px 0 0;
+  overflow: hidden;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @layer components {
   .input {
     @apply w-full rounded-2xl border px-4 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:ring-4 focus:ring-slate-400/15;
@@ -394,8 +556,8 @@ button {
 }
 
 .nav-profile-mark-active {
-  background: rgba(209, 213, 219, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(209, 213, 219, 0.28);
+  background: rgba(209, 213, 219, 0.08);
+  box-shadow: none;
 }
 
 .nav-profile-image,
