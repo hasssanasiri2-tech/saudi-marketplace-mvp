@@ -63,6 +63,13 @@ button {
     var(--app-bg);
 }
 
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: calc(132px + env(safe-area-inset-bottom)) !important;
+}
+
 .profile-top-button {
   display: grid;
   width: 44px;
@@ -235,6 +242,12 @@ button {
 .profile-my-listings {
   margin-top: 20px;
   scroll-margin-top: 18px;
+}
+
+.profile-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .profile-section-heading {

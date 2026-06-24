@@ -988,7 +988,7 @@ function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpen
   ]
 
   return (
-    <div className="profile-screen -mx-4 min-h-screen px-4 pb-4 pt-5 text-white">
+    <div className="profile-screen profile-page -mx-4 min-h-screen px-4 pt-5 text-white">
       <header className="mb-5">
         <h1 className="text-lg font-extrabold text-white">حسابي</h1>
       </header>
@@ -1052,7 +1052,7 @@ function ProfilePage({ user, listings, savedIds, onLogout, onOpenListing, onOpen
         </div>
 
         {myListings.length ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="profile-listings-grid">
             {myListings.map((listing) => (
               <ProfileListingCard key={listing.id} listing={listing} onOpenListing={onOpenListing} />
             ))}
